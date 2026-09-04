@@ -25,6 +25,7 @@ import SignUpPage from './pages/SignUpPage';
 import DashboardPage from './pages/DashboardPage';
 import StartupProfilePage from './pages/StartupProfilePage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import SandboxPage from './pages/SandboxPage';
 
 // Landing Page Sub-Component
 function LandingPage({ currency, setCurrency, theme, setTheme, onSelectStartup, onOpenDealRoom, onOpenCmd }) {
@@ -140,6 +141,7 @@ export default function App() {
         <Route path="/sign-up/*" element={<SignUpPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/sandbox" element={<SandboxPage />} />
         <Route path="/startup/:slug" element={<StartupProfilePage />} />
       </Routes>
 
