@@ -50,7 +50,7 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
           <Link to="/leaderboard" className="nav-link">Leaderboard</Link>
           <Link to="/sandbox" className="nav-link">Verification Sandbox</Link>
           <a href="/#marketplace-section" className="nav-link">M&A Deals</a>
-          <a href="/#valuation-section" className="nav-link">Valuation</a>
+          <Link to="/valuation" className="nav-link">Valuation</Link>
           <a href="/#pricing-section" className="nav-link">Pricing</a>
           <SignedIn>
             <Link to="/dashboard" className="nav-link" style={{ color: 'var(--brand-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -224,7 +224,7 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
             <Link to="/leaderboard" onClick={() => setMobileMenuOpen(false)} className="nav-link">Leaderboard</Link>
             <Link to="/sandbox" onClick={() => setMobileMenuOpen(false)} className="nav-link">Verification Sandbox</Link>
             <a href="/#marketplace-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">M&A Deals</a>
-            <a href="/#valuation-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Valuation</a>
+            <Link to="/valuation" onClick={() => setMobileMenuOpen(false)} className="nav-link">Valuation</Link>
             <a href="/#pricing-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Pricing</a>
             
             <SignedIn>

@@ -4,10 +4,14 @@ import {
   ResponsiveContainer, 
   BarChart, 
   Bar, 
+  AreaChart,
+  Area,
   XAxis, 
   YAxis, 
   Tooltip, 
-  Cell 
+  Cell,
+  CartesianGrid,
+  Legend
 } from 'recharts';
 import { 
   Sparkles, 
@@ -18,62 +22,103 @@ import {
   TrendingUp, 
   DollarSign, 
   Activity,
-  ShieldCheck,
-  Zap,
-  Layers
+  ShieldCheck, 
+  Zap, 
+  Layers,
+  Award,
+  Lock,
+  PieChart as PieIcon,
+  Percent,
+  TrendingDown
 } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
-export default function ValuationCalculator({ currency }) {
-  const [arr, setArr] = useState(24000000); // ₹2.4 Cr
-  const [growth, setGrowth] = useState(20); // 20% MoM
-  const [margin, setMargin] = useState(65); // 65% Net Margin
-  const [churn, setChurn] = useState(1.5); // 1.5% Churn
-  const [categoryMultiplier, setCategoryMultiplier] = useState(5.0);
+export default function ValuationCalculator({ currency = 'INR' }) {
+  // Inputs: Monthly MRR, Growth rate, Churn, Revenue multiple
+  const [mrr, setMrr] = useState(1850000); // ₹18.5 Lakhs/mo
+  const [growthRate, setGrowthRate] = useState(24.8); // 24.8% MoM
+  const [churnRate, setChurnRate] = useState(1.4); // 1.4% Churn / mo
+  const [multiple, setMultiple] = useState(5.5); // 5.5x ARR multiple
+  const [activeChartTab, setActiveChartTab] = useState('sensitivity'); // 'sensitivity' or 'projection'
 
-  const { multiple, midValuation, lowValuation, highValuation, estProfit, ruleOf40, sensitivityData } = useMemo(() => {
-    let m = categoryMultiplier;
+  // Computed Outputs
+  const {
+    arr,
+    valuation,
+    attractivenessScore,
+    scoreTier,
+    scoreColor,
+    sensitivityData,
+    projectionData
+  } = useMemo(() => {
+    const calculatedArr = mrr * 12;
+    const calculatedValuation = calculatedArr * multiple;
 
-    if (growth >= 25) m += 1.5;
-    else if (growth >= 15) m += 0.8;
-    else if (growth < 5) m -= 0.5;
+    // Acquisition Attractiveness Score calculation (0 - 100)
+    // Factors: Growth (+), Low Churn (+), Multiple vs Market (+)
+    let score = 50;
+    score += (growthRate * 1.2); // Growth boost
+    score += (3.0 - churnRate) * 6; // Churn bonus/penalty
+    if (multiple >= 4.0 && multiple <= 7.0) score += 8; // Healthy valuation sweetspot
+    else if (multiple > 9.0) score -= 6; // Aggressive multiple discount
 
-    if (margin >= 70) m += 0.6;
-    else if (margin < 40) m -= 0.6;
+    score = Math.min(98, Math.max(15, Math.round(score)));
 
-    if (churn > 3) m -= 0.7;
-    else if (churn <= 1.5) m += 0.4;
+    let tier = 'Standard Acquisition Target';
+    let color = '#3B82F6';
+    if (score >= 88) {
+      tier = 'Tier-1 Elite (High Buyer Inbound)';
+      color = '#10B981';
+    } else if (score >= 75) {
+      tier = 'High-Demand Growth Asset';
+      color = '#2563EB';
+    } else if (score >= 60) {
+      tier = 'Strong Cash-Flow Business';
+      color = '#8B5CF6';
+    } else {
+      tier = 'Value / Turnaround Opportunity';
+      color = '#F59E0B';
+    }
 
-    m = Math.max(1.8, Math.round(m * 10) / 10);
-
-    const mid = arr * m;
-    const low = mid * 0.85;
-    const high = mid * 1.2;
-    const profit = arr * (margin / 100);
-    const r40 = growth + margin;
-
-    // Valuation sensitivity data for Recharts
+    // Chart 1: Valuation Sensitivity Data across Multiples
     const sensitivity = [
-      { multipleLabel: '3.0x (Floor)', val: arr * 3.0, isCurrent: false },
-      { multipleLabel: '4.0x (Median)', val: arr * 4.0, isCurrent: false },
-      { multipleLabel: `${m.toFixed(1)}x (Your Comps)`, val: mid, isCurrent: true },
-      { multipleLabel: '6.0x (Top 10%)', val: arr * 6.0, isCurrent: false },
-      { multipleLabel: '8.0x (YC Elite)', val: arr * 8.0, isCurrent: false }
+      { label: '2.5x (Floor)', multipleVal: 2.5, val: calculatedArr * 2.5, isCurrent: Math.abs(multiple - 2.5) < 0.2 },
+      { label: '3.8x (Median)', multipleVal: 3.8, val: calculatedArr * 3.8, isCurrent: Math.abs(multiple - 3.8) < 0.2 },
+      { label: `${multiple.toFixed(1)}x (Active)`, multipleVal: multiple, val: calculatedValuation, isCurrent: true },
+      { label: '6.5x (Top 10%)', multipleVal: 6.5, val: calculatedArr * 6.5, isCurrent: Math.abs(multiple - 6.5) < 0.2 },
+      { label: '8.5x (YC Elite)', multipleVal: 8.5, val: calculatedArr * 8.5, isCurrent: Math.abs(multiple - 8.5) < 0.2 }
     ];
 
-    return { 
-      multiple: m, 
-      midValuation: mid, 
-      lowValuation: low, 
-      highValuation: high, 
-      estProfit: profit, 
-      ruleOf40: r40,
-      sensitivityData: sensitivity
+    // Chart 2: 3-Year Forward ARR & Valuation Projection
+    const projection = [];
+    let projMrr = mrr;
+    const monthlyCompounding = 1 + (growthRate / 100) * 0.7; // discount long term
+
+    for (let month = 0; month <= 36; month += 6) {
+      const yearLabel = month === 0 ? 'Today' : `M+${month}`;
+      const currentProjArr = projMrr * 12;
+      const currentProjVal = currentProjArr * multiple;
+      projection.push({
+        period: yearLabel,
+        arr: Math.round(currentProjArr),
+        valuation: Math.round(currentProjVal)
+      });
+      projMrr = projMrr * Math.pow(monthlyCompounding, 6);
+    }
+
+    return {
+      arr: calculatedArr,
+      valuation: calculatedValuation,
+      attractivenessScore: score,
+      scoreTier: tier,
+      scoreColor: color,
+      sensitivityData: sensitivity,
+      projectionData: projection
     };
-  }, [arr, growth, margin, churn, categoryMultiplier]);
+  }, [mrr, growthRate, churnRate, multiple]);
 
   return (
-    <section className="section-wrapper" style={{ background: 'var(--bg-subtle)', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)' }} id="valuation-section">
+    <section className="section-wrapper" id="valuation-section" style={{ background: 'var(--bg-subtle)', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)' }}>
       <div className="container">
         
         {/* Section Header */}
@@ -83,210 +128,333 @@ export default function ValuationCalculator({ currency }) {
             <span>INSTANT VALUATION ENGINE</span>
           </span>
           <h2 style={{ marginBottom: '12px' }}>
-            Benchmark Your Valuation Like a Top YC SaaS
+            Interactive Startup Valuation Calculator
           </h2>
           <p className="lead-text">
-            Dynamic valuation modeling using verified Indian tech deal comps, growth velocity, and gross retention multipliers.
+            Benchmark your startup's enterprise valuation in real time using verified Indian tech deal multiples, ARR trajectory, and acquisition attractiveness scoring.
           </p>
         </div>
 
         {/* Calculator Main Grid */}
-        <div className="glass-card-elevated" style={{
-          maxWidth: '1120px',
+        <div className="glass-card" style={{
+          maxWidth: '1200px',
           margin: '0 auto',
-          padding: '32px',
-          display: 'grid',
-          gridTemplateColumns: '1.1fr 1fr',
-          gap: '32px'
+          padding: '36px',
+          background: 'var(--bg-surface)',
+          borderRadius: '24px',
+          boxShadow: 'var(--shadow-xl)',
+          border: '1px solid var(--border-light)'
         }}>
           
-          {/* Left Column: Interactive Range Sliders */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            
-            {/* Sector Selector */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
-                Business Category & Tech Stack
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {[
-                  { name: 'B2B SaaS', mult: 5.0 },
-                  { name: 'AI & DevTools', mult: 5.5 },
-                  { name: 'Fintech & UPI', mult: 4.5 }
-                ].map(cat => (
-                  <button
-                    key={cat.name}
-                    type="button"
-                    onClick={() => setCategoryMultiplier(cat.mult)}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: categoryMultiplier === cat.mult ? '2px solid var(--brand-primary)' : '1px solid var(--border-light)',
-                      background: categoryMultiplier === cat.mult ? 'var(--brand-soft)' : 'var(--bg-subtle)',
-                      color: categoryMultiplier === cat.mult ? 'var(--brand-primary)' : 'var(--text-secondary)',
-                      fontWeight: 600,
-                      fontSize: '0.8125rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+            gap: '36px',
+            alignItems: 'start'
+          }}>
 
-            {/* ARR Slider */}
+            {/* Left Column: Interactive Inputs */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '8px' }}>
-                <span>Annual Recurring Revenue (ARR)</span>
-                <span style={{ color: 'var(--brand-primary)', fontWeight: 800, fontSize: '0.9375rem', fontFamily: 'var(--font-mono)' }}>
-                  {formatCurrency(arr, currency)}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Valuation Inputs</h3>
+                <span className="badge badge-verified" style={{ fontSize: '0.75rem' }}>
+                  <Zap size={12} />
+                  <span>Real-Time Reactive</span>
                 </span>
               </div>
-              <input
-                type="range"
-                min="1000000"
-                max="100000000"
-                step="500000"
-                value={arr}
-                onChange={(e) => setArr(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--brand-primary)', cursor: 'pointer' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                <span>₹10 Lakhs</span>
-                <span>₹5 Crores</span>
-                <span>₹10 Crores</span>
-              </div>
-            </div>
 
-            {/* Growth Slider */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '8px' }}>
-                <span>Month-over-Month (MoM) Growth</span>
-                <span style={{ color: 'var(--success-dark)', fontWeight: 800, fontSize: '0.9375rem', fontFamily: 'var(--font-mono)' }}>
-                  +{growth}% MoM
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="50"
-                step="1"
-                value={growth}
-                onChange={(e) => setGrowth(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--brand-primary)', cursor: 'pointer' }}
-              />
-            </div>
-
-            {/* Profit Margin Slider */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '8px' }}>
-                <span>Net Profit Margin (%)</span>
-                <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.9375rem', fontFamily: 'var(--font-mono)' }}>
-                  {margin}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="90"
-                step="1"
-                value={margin}
-                onChange={(e) => setMargin(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--brand-primary)', cursor: 'pointer' }}
-              />
-            </div>
-
-            {/* Rule of 40 Benchmark Pill */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              background: 'var(--bg-surface)',
-              borderRadius: '10px',
-              border: '1px solid var(--border-light)'
-            }}>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>RULE OF 40 SCORE (Growth + Margin)</div>
-                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: ruleOf40 >= 40 ? 'var(--success-dark)' : 'var(--text-primary)' }}>
-                  {ruleOf40}% {ruleOf40 >= 40 ? '★ Top Tier' : '• Healthy'}
+              {/* Input 1: Monthly MRR */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Monthly Recurring Revenue (MRR)
+                  </label>
+                  <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {formatCurrency(mrr, currency)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="50000"
+                  max="10000000"
+                  step="50000"
+                  value={mrr}
+                  onChange={(e) => setMrr(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--brand-primary)', cursor: 'pointer' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  <span>₹50K / mo</span>
+                  <span>₹50 Lakhs</span>
+                  <span>₹1.00 Crore / mo</span>
                 </div>
               </div>
-              <span className="badge badge-verified" style={{ fontSize: '0.7rem' }}>
-                <ShieldCheck size={12} />
-                <span>Razorpay Audited</span>
-              </span>
+
+              {/* Input 2: Growth Rate */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Monthly Growth Rate (MoM %)
+                  </label>
+                  <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--success-dark)', fontFamily: 'var(--font-mono)' }}>
+                    +{growthRate.toFixed(1)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  step="0.5"
+                  value={growthRate}
+                  onChange={(e) => setGrowthRate(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#10B981', cursor: 'pointer' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  <span>0% (Flat)</span>
+                  <span>25% MoM (High Growth)</span>
+                  <span>50% (Hyper Growth)</span>
+                </div>
+              </div>
+
+              {/* Input 3: Churn Rate */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Monthly Logo Churn (%)
+                  </label>
+                  <span style={{ fontSize: '1.15rem', fontWeight: 800, color: churnRate <= 2 ? 'var(--brand-primary)' : 'var(--warning)', fontFamily: 'var(--font-mono)' }}>
+                    {churnRate.toFixed(1)}% / mo
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.2"
+                  max="8.0"
+                  step="0.1"
+                  value={churnRate}
+                  onChange={(e) => setChurnRate(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#8B5CF6', cursor: 'pointer' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  <span>0.2% (Elite Retention)</span>
+                  <span>2.0% (SaaS Benchmark)</span>
+                  <span>8.0% (High Churn)</span>
+                </div>
+              </div>
+
+              {/* Input 4: Revenue Multiple */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Revenue Multiple (ARR Multiple)
+                  </label>
+                  <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {multiple.toFixed(1)}x ARR
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="2.0"
+                  max="12.0"
+                  step="0.5"
+                  value={multiple}
+                  onChange={(e) => setMultiple(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--brand-primary)', cursor: 'pointer' }}
+                />
+                
+                {/* Quick Multiple Presets */}
+                <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+                  {[3.0, 4.0, 5.5, 7.0, 10.0].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setMultiple(preset)}
+                      className={`btn btn-sm ${multiple === preset ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      {preset.toFixed(1)}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Calculated Outputs & Attractiveness Gauge */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Valuation & Audit Score</h3>
+                <span className="badge badge-brand" style={{ fontSize: '0.75rem' }}>
+                  <ShieldCheck size={12} />
+                  <span>YC Benchmark Comps</span>
+                </span>
+              </div>
+
+              {/* Primary Output Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                
+                {/* Output 1: Annual Run Rate (ARR) */}
+                <div style={{ padding: '20px', background: 'var(--bg-subtle)', borderRadius: '16px', border: '1px solid var(--border-light)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Annual Run Rate (ARR)
+                  </span>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', margin: '4px 0' }}>
+                    {formatCurrency(arr, currency)}
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    {formatCurrency(mrr, currency)}/mo × 12
+                  </span>
+                </div>
+
+                {/* Output 2: Estimated Valuation */}
+                <div style={{ padding: '20px', background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(29, 78, 216, 0.02) 100%)', borderRadius: '16px', border: '1px solid var(--brand-border)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand-primary)', textTransform: 'uppercase' }}>
+                    Estimated Valuation
+                  </span>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', margin: '4px 0' }}>
+                    {formatCurrency(valuation, currency)}
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    At <strong>{multiple.toFixed(1)}x</strong> Revenue Multiple
+                  </span>
+                </div>
+
+              </div>
+
+              {/* Acquisition Attractiveness Score Card */}
+              <div style={{
+                padding: '24px',
+                background: 'var(--bg-card)',
+                borderRadius: '16px',
+                border: '1px solid var(--border-light)',
+                marginBottom: '24px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Award size={20} color={scoreColor} />
+                    <span style={{ fontWeight: 800, fontSize: '0.9375rem' }}>Acquisition Attractiveness Score</span>
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: scoreColor, fontFamily: 'var(--font-mono)' }}>
+                    {attractivenessScore} <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>/ 100</span>
+                  </div>
+                </div>
+
+                {/* Visual Attractiveness Score Progress Bar */}
+                <div style={{ height: '8px', width: '100%', background: 'var(--bg-muted)', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
+                  <motion.div
+                    style={{ height: '100%', background: scoreColor }}
+                    animate={{ width: `${attractivenessScore}%` }}
+                    transition={{ ease: 'easeOut', duration: 0.2 }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Buyer Readiness Tier:</span>
+                  <strong style={{ color: scoreColor }}>{scoreTier}</strong>
+                </div>
+              </div>
+
+              {/* CTA button */}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <a href="/#marketplace-section" className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center' }}>
+                  <span>View M&A Deal Comps</span>
+                </a>
+                <a href="/dashboard" className="btn btn-primary btn-sm" style={{ flex: 1, justifyContent: 'center', gap: '6px' }}>
+                  <Sparkles size={14} />
+                  <span>List in Deal Room</span>
+                </a>
+              </div>
+
             </div>
 
           </div>
 
-          {/* Right Column: Estimated Valuation Card & Multiples Graph */}
-          <div style={{
-            background: 'var(--bg-subtle)',
-            borderRadius: '16px',
-            border: '1px solid var(--border-light)',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  2026 ESTIMATED VALUATION
-                </span>
-                <span className="badge badge-brand" style={{ fontSize: '0.75rem' }}>
-                  {multiple}x ARR Multiple
-                </span>
+          {/* ====================================================================
+              Interactive Recharts Visualization Section
+              ==================================================================== */}
+          <div style={{ marginTop: '36px', borderTop: '1px solid var(--border-light)', paddingTop: '28px' }}>
+            
+            {/* Chart Switcher Tabs */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Interactive Valuation Analytics</h4>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                  Dynamic sensitivity curve and 3-year compounding forward projections.
+                </p>
               </div>
 
-              {/* Main Number */}
-              <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.04em', lineHeight: '1.1', marginBottom: '8px' }}>
-                {formatCurrency(midValuation, currency)}
-              </div>
-
-              {/* Valuation Band */}
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                Comps Range: <strong>{formatCurrency(lowValuation, currency)}</strong> – <strong>{formatCurrency(highValuation, currency)}</strong>
-              </div>
-
-              {/* Recharts Sensitivity Multiples Bar Chart */}
-              <div style={{ marginBottom: '16px', height: 140 }}>
-                <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                  Multiples Sensitivity Benchmark
-                </div>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={sensitivityData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
-                    <XAxis dataKey="multipleLabel" stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/8300000).toFixed(1)}M` : `₹${(v/10000000).toFixed(1)}Cr`} />
-                    <Tooltip formatter={(val) => [formatCurrency(val, currency), 'Valuation']} contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
-                    <Bar dataKey="val" radius={[4, 4, 0, 0]}>
-                      {sensitivityData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.isCurrent ? '#2563EB' : 'rgba(148, 163, 184, 0.4)'} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Breakdown Details */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' }}>
-                <div style={{ background: 'var(--bg-surface)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Est. Annual Profit</div>
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-dark)' }}>{formatCurrency(estProfit, currency)}</div>
-                </div>
-                <div style={{ background: 'var(--bg-surface)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Multiple Benchmark</div>
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--brand-primary)' }}>Top 12% in India</div>
-                </div>
+              <div style={{ display: 'inline-flex', background: 'var(--bg-muted)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                <button
+                  onClick={() => setActiveChartTab('sensitivity')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: activeChartTab === 'sensitivity' ? 'var(--bg-surface)' : 'transparent',
+                    color: activeChartTab === 'sensitivity' ? 'var(--text-primary)' : 'var(--text-muted)',
+                    fontWeight: 600,
+                    fontSize: '0.8125rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Multiple Sensitivity
+                </button>
+                <button
+                  onClick={() => setActiveChartTab('projection')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: activeChartTab === 'projection' ? 'var(--bg-surface)' : 'transparent',
+                    color: activeChartTab === 'projection' ? 'var(--text-primary)' : 'var(--text-muted)',
+                    fontWeight: 600,
+                    fontSize: '0.8125rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  3-Year Projection
+                </button>
               </div>
             </div>
 
-            <a href="#verify-section" className="btn btn-primary" style={{ width: '100%' }}>
-              <Sparkles size={16} />
-              <span>Verify Revenue to Lock Valuation</span>
-            </a>
+            {/* Chart Container */}
+            <div style={{ width: '100%', height: 290, background: 'var(--bg-subtle)', borderRadius: '16px', padding: '16px', border: '1px solid var(--border-light)' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                {activeChartTab === 'sensitivity' ? (
+                  <BarChart data={sensitivityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
+                    <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/8300000).toFixed(1)}M` : `₹${(v/10000000).toFixed(1)}Cr`} />
+                    <Tooltip
+                      formatter={(val) => [formatCurrency(val, currency), 'Estimated Valuation']}
+                      contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }}
+                    />
+                    <Bar dataKey="val" radius={[6, 6, 0, 0]}>
+                      {sensitivityData.map((entry, index) => (
+                        <Cell key={`bar-${index}`} fill={entry.isCurrent ? '#2563EB' : '#94A3B8'} opacity={entry.isCurrent ? 1 : 0.45} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : (
+                  <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="valProjGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563EB" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
+                    <XAxis dataKey="period" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/8300000).toFixed(1)}M` : `₹${(v/10000000).toFixed(1)}Cr`} />
+                    <Tooltip
+                      formatter={(val) => [formatCurrency(val, currency), 'Valuation']}
+                      contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }}
+                    />
+                    <Area type="monotone" dataKey="valuation" stroke="#2563EB" strokeWidth={3} fillOpacity={1} fill="url(#valProjGrad)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#FFF', strokeWidth: 2 }} />
+                  </AreaChart>
+                )}
+              </ResponsiveContainer>
+            </div>
+
           </div>
 
         </div>
