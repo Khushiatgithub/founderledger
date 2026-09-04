@@ -12,37 +12,74 @@ import {
   ExternalLink,
   ChevronRight,
   Filter,
-  BadgeCheck
+  BadgeCheck,
+  RotateCcw,
+  Layers
 } from 'lucide-react';
 import { PLATFORM_DATA } from '../data/startups';
 import { formatCurrency } from '../utils/formatters';
 
-// Helper component to render mini SVG sparkline
-function Sparkline({ data = [] }) {
+// Brand color mapping for realistic Indian startup logos
+const LOGO_COLORS = {
+  docupulse: { bg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', text: '#FFFFFF', initials: 'DP' },
+  quikform: { bg: 'linear-gradient(135deg, #059669 0%, #10B981 100%)', text: '#FFFFFF', initials: 'QF' },
+  devship: { bg: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', text: '#FFFFFF', initials: 'DS' },
+  legalchakra: { bg: 'linear-gradient(135deg, #D97706 0%, #B45309 100%)', text: '#FFFFFF', initials: 'LC' },
+  edustack: { bg: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', text: '#FFFFFF', initials: 'ES' },
+  finclerk: { bg: 'linear-gradient(135deg, #4338CA 0%, #3730A3 100%)', text: '#FFFFFF', initials: 'FC' },
+  pixelkite: { bg: 'linear-gradient(135deg, #DB2777 0%, #BE185D 100%)', text: '#FFFFFF', initials: 'PK' },
+  agritrace: { bg: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', text: '#FFFFFF', initials: 'AT' }
+};
+
+// Helper component to render animated mini SVG sparkline
+function Sparkline({ data = [], color = "#2563EB", id = "spark" }) {
   if (!data || data.length < 2) return null;
   const revenues = data.map(d => d.revenue);
-  const min = Math.min(...revenues) * 0.9;
-  const max = Math.max(...revenues) * 1.1;
-  const width = 100;
-  const height = 32;
+  const min = Math.min(...revenues) * 0.92;
+  const max = Math.max(...revenues) * 1.08;
+  const width = 110;
+  const height = 34;
 
   const points = revenues.map((val, idx) => {
     const x = (idx / (revenues.length - 1)) * width;
     const y = height - ((val - min) / (max - min)) * height;
-    return `${x},${y}`;
-  }).join(' ');
+    return { x, y, val };
+  });
+
+  const pathD = points.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`, '');
+  const areaD = `${pathD} L ${width} ${height} L 0 ${height} Z`;
+  const lastPoint = points[points.length - 1];
 
   return (
-    <svg width={width} height={height} style={{ overflow: 'visible' }}>
-      <polyline
-        fill="none"
-        stroke="#2563EB"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={points}
-      />
-    </svg>
+    <div style={{ position: 'relative', width, height }}>
+      <svg width={width} height={height} style={{ overflow: 'visible' }}>
+        <defs>
+          <linearGradient id={`grad-${id}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+            <stop offset="100%" stopColor={color} stopOpacity={0.0} />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill={`url(#grad-${id})`} />
+        <path
+          d={pathD}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {lastPoint && (
+          <circle 
+            cx={lastPoint.x} 
+            cy={lastPoint.y} 
+            r="3" 
+            fill={color} 
+            stroke="#FFFFFF" 
+            strokeWidth="1.5" 
+          />
+        )}
+      </svg>
+    </div>
   );
 }
 
@@ -51,6 +88,20 @@ export default function Leaderboard({ currency, onSelectStartup }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [dealFilter, setDealFilter] = useState('all');
   const [sortBy, setSortBy] = useState('arr_desc');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCategoryChange = (catId) => {
+    setIsLoading(true);
+    setActiveCategory(catId);
+    setTimeout(() => setIsLoading(false), 200);
+  };
+
+  const handleResetFilters = () => {
+    setActiveCategory('all');
+    setSearchQuery('');
+    setDealFilter('all');
+    setSortBy('arr_desc');
+  };
 
   const filteredStartups = useMemo(() => {
     let list = [...PLATFORM_DATA.startups];
@@ -90,13 +141,13 @@ export default function Leaderboard({ currency, onSelectStartup }) {
         <div className="section-header">
           <span className="badge badge-brand" style={{ marginBottom: '12px' }}>
             <BadgeCheck size={13} />
-            <span>LIVE AUDITED DIRECTORY</span>
+            <span>INDIA STARTUP INDEX</span>
           </span>
           <h2 style={{ marginBottom: '12px' }}>
-            India's Most Transparent Startup Leaderboard
+            The Verified India Startup Leaderboard
           </h2>
           <p className="lead-text">
-            Every rupee verified through automated read-only gateway API tunnels and filed GSTR-3B tax receipts. Zero pitch deck puffery.
+            Discover India's most authentic bootstrapped & venture-backed tech startups. Every rupee cross-verified via Razorpay webhooks and filed GSTR-3B tax receipts.
           </p>
         </div>
 
@@ -110,7 +161,7 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by company, tech stack, founder, or location..."
+                placeholder="Search startups by name, tech stack, founder, or city (e.g. Bengaluru, Pune)..."
                 style={{
                   width: '100%',
                   padding: '10px 14px 10px 40px',
@@ -123,6 +174,25 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                   outline: 'none'
                 }}
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -165,7 +235,7 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                 }}
               >
                 <option value="all">All Deals</option>
-                <option value="open_acquisition">Acquisition Listings</option>
+                <option value="open_acquisition">M&A Acquisition Deals</option>
                 <option value="not_for_sale">Verified Proofs Only</option>
               </select>
             </div>
@@ -176,7 +246,7 @@ export default function Leaderboard({ currency, onSelectStartup }) {
             {PLATFORM_DATA.categories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
+                onClick={() => handleCategoryChange(cat.id)}
                 className={`btn btn-sm ${activeCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
                 style={{ fontSize: '0.8125rem', padding: '6px 14px', borderRadius: '8px' }}
               >
@@ -201,113 +271,157 @@ export default function Leaderboard({ currency, onSelectStartup }) {
           {/* Table Header Row */}
           <div className="leaderboard-row leaderboard-header-row">
             <div>#</div>
-            <div>STARTUP / DOMAIN</div>
+            <div>STARTUP / LOCATION</div>
             <div>VERIFIED MRR</div>
             <div className="hide-on-tablet">YOY GROWTH</div>
-            <div className="hide-on-tablet">REVENUE TREND</div>
+            <div className="hide-on-tablet">12M SPARKLINE</div>
             <div className="hide-on-mobile">VALUATION</div>
             <div style={{ textAlign: 'right' }}>ACTION</div>
           </div>
 
-          {/* Startups Rows */}
-          {filteredStartups.length > 0 ? (
-            filteredStartups.map((startup, idx) => (
-              <motion.div
-                key={startup.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2, delay: idx * 0.03 }}
-                onClick={() => onSelectStartup(startup)}
-                className="leaderboard-row"
-              >
-                {/* Rank */}
-                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: idx < 3 ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
-                  #{idx + 1}
-                </div>
-
-                {/* Company Avatar & Details */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 800,
-                    fontSize: '0.875rem',
-                    flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(37, 99, 235, 0.2)'
-                  }}>
-                    {startup.name.slice(0, 2).toUpperCase()}
+          {/* Skeletons when Loading */}
+          {isLoading ? (
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[1, 2, 3, 4, 5].map(k => (
+                <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div className="skeleton-shimmer" style={{ width: '30px', height: '24px' }} />
+                  <div className="skeleton-shimmer" style={{ width: '40px', height: '40px', borderRadius: '10px' }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div className="skeleton-shimmer" style={{ width: '160px', height: '16px' }} />
+                    <div className="skeleton-shimmer" style={{ width: '220px', height: '12px' }} />
                   </div>
+                  <div className="skeleton-shimmer hide-on-tablet" style={{ width: '100px', height: '30px' }} />
+                  <div className="skeleton-shimmer" style={{ width: '80px', height: '30px' }} />
+                </div>
+              ))}
+            </div>
+          ) : filteredStartups.length > 0 ? (
+            filteredStartups.map((startup, idx) => {
+              const logo = LOGO_COLORS[startup.id] || { 
+                bg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', 
+                text: '#FFFFFF', 
+                initials: startup.name.slice(0, 2).toUpperCase() 
+              };
+
+              return (
+                <motion.div
+                  key={startup.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.15, delay: idx * 0.02 }}
+                  onClick={() => onSelectStartup(startup)}
+                  className="leaderboard-row"
+                >
+                  {/* Rank */}
+                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: idx < 3 ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
+                    #{idx + 1}
+                  </div>
+
+                  {/* Company Logo & Details */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      background: logo.bg,
+                      color: logo.text,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.875rem',
+                      flexShrink: 0,
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)'
+                    }}>
+                      {logo.initials}
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
+                          {startup.name}
+                        </span>
+                        <span className="badge badge-verified" style={{ fontSize: '0.625rem', padding: '2px 6px' }}>
+                          <ShieldCheck size={10} />
+                          <span>Razorpay</span>
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
+                        {startup.location} • {startup.tagline}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Verified MRR / ARR */}
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
-                        {startup.name}
-                      </span>
-                      <span className="badge badge-verified" style={{ fontSize: '0.625rem', padding: '2px 6px' }}>
-                        <ShieldCheck size={10} />
-                        <span>Razorpay</span>
-                      </span>
+                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                      {formatCurrency(startup.mrr, currency)}
+                      <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-muted)' }}>/mo</span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
-                      {startup.tagline}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      ARR: {formatCurrency(startup.arr, currency)}
                     </div>
                   </div>
-                </div>
 
-                {/* Verified MRR / ARR */}
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
-                    {formatCurrency(startup.mrr, currency)}
-                    <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-muted)' }}>/mo</span>
+                  {/* YoY Growth */}
+                  <div className="hide-on-tablet">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-dark)' }}>
+                      <TrendingUp size={14} />
+                      <span>+{startup.growthMoM}%</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Margin: {startup.netMargin}%
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    ARR: {formatCurrency(startup.arr, currency)}
-                  </div>
-                </div>
 
-                {/* YoY Growth */}
-                <div className="hide-on-tablet">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-dark)' }}>
-                    <TrendingUp size={14} />
-                    <span>+{startup.growthMoM}%</span>
+                  {/* Animated 12-Month Sparkline Curve */}
+                  <div className="hide-on-tablet">
+                    <Sparkline data={startup.monthlyHistory} id={startup.id} />
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Margin: {startup.netMargin}%
-                  </div>
-                </div>
 
-                {/* 12-Month Sparkline Curve */}
-                <div className="hide-on-tablet">
-                  <Sparkline data={startup.monthlyHistory} />
-                </div>
-
-                {/* Valuation / Multiple */}
-                <div className="hide-on-mobile">
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-                    {startup.askingPrice ? formatCurrency(startup.askingPrice, currency) : formatCurrency(startup.arr * 4.2, currency)}
+                  {/* Valuation / Multiple */}
+                  <div className="hide-on-mobile">
+                    <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                      {startup.askingPrice ? formatCurrency(startup.askingPrice, currency) : formatCurrency(startup.arr * 4.2, currency)}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
+                      {startup.multiple || '4.2x Multiple'}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
-                    {startup.multiple || '4.2x Multiple'}
-                  </div>
-                </div>
 
-                {/* Action CTA */}
-                <div style={{ textAlign: 'right' }}>
-                  <button className="btn btn-secondary btn-sm" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>
-                    <span>Audit Ledger</span>
-                    <ChevronRight size={13} />
-                  </button>
-                </div>
-              </motion.div>
-            ))
+                  {/* Action CTA */}
+                  <div style={{ textAlign: 'right' }}>
+                    <button className="btn btn-secondary btn-sm" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>
+                      <span>Audit Ledger</span>
+                      <ChevronRight size={13} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })
           ) : (
-            <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              No verified startups found matching your filter criteria.
+            /* Realistic Empty State */
+            <div style={{ padding: '64px 24px', textAlign: 'center' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: 'var(--bg-muted)',
+                color: 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto'
+              }}>
+                <Search size={22} />
+              </div>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '6px' }}>No Startups Found</h4>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', maxWidth: '360px', margin: '0 auto 16px auto' }}>
+                We couldn't find any audited Indian startups matching "{searchQuery}". Try adjusting your query or category filters.
+              </p>
+              <button onClick={handleResetFilters} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
+                <RotateCcw size={13} />
+                <span>Reset All Filters</span>
+              </button>
             </div>
           )}
 
@@ -315,8 +429,8 @@ export default function Leaderboard({ currency, onSelectStartup }) {
 
         {/* Leaderboard Footer Trust Stamp */}
         <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '8px' }}>
-          <div>Showing <strong>{filteredStartups.length}</strong> audited Indian startups</div>
-          <div>Last GST Reconciliation Sync: <strong>March 2026 Batch #842</strong></div>
+          <div>Showing <strong>{filteredStartups.length}</strong> audited Indian startups (Ranked by ARR)</div>
+          <div>All data authenticated via <strong>Razorpay Subscriptions + GSTR-3B Tax Portal</strong></div>
         </div>
 
       </div>

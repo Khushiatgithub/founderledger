@@ -25,7 +25,8 @@ import {
   ExternalLink,
   ChevronRight,
   Clock,
-  Layers
+  Layers,
+  Check
 } from 'lucide-react';
 import { PLATFORM_DATA } from '../data/startups';
 import { formatCurrency } from '../utils/formatters';
@@ -34,7 +35,6 @@ import { useCountUp } from '../utils/useCountUp';
 export default function HeroSection({ currency, onSelectStartup, onOpenVerify }) {
   const [selectedHeroIndex, setSelectedHeroIndex] = useState(0);
   const [timeRange, setTimeRange] = useState('1Y');
-  const [activeMetricTab, setActiveMetricTab] = useState('revenue');
   const [livePings, setLivePings] = useState([
     { id: 1, type: 'razorpay.payment.authorized', amount: 14500, customer: 'Zepto Logistics', time: '2s ago' },
     { id: 2, type: 'gst.b2b.invoice_reconciled', amount: 84000, customer: 'Groww Capital', time: '14s ago' },
@@ -101,7 +101,7 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
               ✓ Verified Ledger
             </span>
           </div>
-          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', fontFamily: 'var(--font-mono)' }}>
             {formatCurrency(val, currency)}
           </div>
           <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', fontSize: '0.72rem', color: '#CBD5E1', display: 'flex', gap: '8px' }}>
@@ -199,7 +199,31 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
           className="dashboard-console"
+          style={{ position: 'relative' }}
         >
+          {/* Floating Glass Metric Tags for Linear/Ramp polish */}
+          <div className="floating-glass-tag hide-on-mobile" style={{
+            position: 'absolute',
+            top: '-18px',
+            right: '24px',
+            zIndex: 10,
+            background: 'rgba(255, 255, 255, 0.92)',
+            border: '1px solid var(--border-light)',
+            boxShadow: 'var(--shadow-md)',
+            borderRadius: '9999px',
+            padding: '6px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: 'var(--text-primary)'
+          }}>
+            <span className="pulse-dot"></span>
+            <span>Live Settlement: <strong>+₹18,500</strong></span>
+            <span className="badge badge-verified" style={{ fontSize: '0.625rem', padding: '1px 6px' }}>ARN Verified</span>
+          </div>
+
           {/* Top Console Navigation Bar */}
           <div className="dashboard-header">
             {/* Startup Selector Switcher */}
@@ -310,7 +334,7 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{ping.customer}</span>
-                          <strong style={{ color: 'var(--text-primary)' }}>+₹{ping.amount.toLocaleString('en-IN')}</strong>
+                          <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>+₹{ping.amount.toLocaleString('en-IN')}</strong>
                         </div>
                       </motion.div>
                     ))}
@@ -339,7 +363,7 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
                   <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
                     VERIFIED MRR
                   </div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-mono)' }}>
                     {formatCurrency(animatedMRR, currency)}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '0.75rem', color: 'var(--success-dark)', fontWeight: 600 }}>
@@ -353,7 +377,7 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
                   <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
                     VERIFIED ARR
                   </div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--brand-primary)', letterSpacing: '-0.03em' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--brand-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-mono)' }}>
                     {formatCurrency(animatedARR, currency)}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
@@ -366,7 +390,7 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
                   <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
                     NET PROFIT MARGIN
                   </div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-mono)' }}>
                     {activeStartup.netMargin}%
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
@@ -379,7 +403,7 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
                   <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
                     EST. VALUATION
                   </div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-mono)' }}>
                     {activeStartup.askingPrice ? formatCurrency(activeStartup.askingPrice, currency) : formatCurrency(activeStartup.arr * 4.2, currency)}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600, marginTop: '4px' }}>

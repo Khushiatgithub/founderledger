@@ -15,7 +15,10 @@ import {
   Database,
   Lock,
   ExternalLink,
-  Code
+  Code,
+  Download,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 export default function VerificationSimulator({ currency }) {
@@ -26,7 +29,14 @@ export default function VerificationSimulator({ currency }) {
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [badgeTheme, setBadgeTheme] = useState('light');
   const [hash, setHash] = useState('FL-2026-KA-88A92F');
+
+  const autofillSample = () => {
+    setSelectedGateway('razorpay');
+    setApiKeyInput('rzp_live_sub_8829f00192a');
+    setGstinInput('29AAACD4982R1Z8');
+  };
 
   const startReconciliation = () => {
     setCurrentStep(2);
@@ -34,12 +44,12 @@ export default function VerificationSimulator({ currency }) {
     setLogs([]);
 
     const simulationLogs = [
-      { text: "Establishing read-only OAuth 2.0 tunnel to Razorpay API...", time: "0.2s", pct: 20 },
-      { text: "Ingesting 14,280 subscription transactions across past 12 months...", time: "0.7s", pct: 40 },
-      { text: "Scrubbing test tokens, refunds, chargebacks, and gateway fees...", time: "1.3s", pct: 60 },
-      { text: "Validating GSTR-3B electronic tax filing against MCA CIN registry...", time: "1.9s", pct: 80 },
-      { text: "Cross-reconciling settlement bank statements (100% Match)...", time: "2.5s", pct: 95 },
-      { text: "SUCCESS: SHA-256 Ledger Block Minted. Certified ARR: ₹2.22 Cr", time: "3.0s", pct: 100 }
+      { text: "Establishing read-only OAuth 2.0 tunnel to Razorpay API (rzp_live)...", time: "0.2s", pct: 15 },
+      { text: "Fetching active subscription plans, AutoPay VPAs, and settlement batches...", time: "0.6s", pct: 35 },
+      { text: "Scrubbing test tokens, refunds, chargebacks, and gateway transaction fees...", time: "1.1s", pct: 55 },
+      { text: "Validating GSTR-3B filed returns against MCA CIN (29AAACD4982R1Z8)...", time: "1.7s", pct: 75 },
+      { text: "Cross-reconciling ICICI merchant bank settlements (100% Zero Discrepancy)...", time: "2.3s", pct: 90 },
+      { text: "SUCCESS: SHA-256 Ledger Block Minted. Certified ARR: ₹2.22 Cr ARR", time: "2.8s", pct: 100 }
     ];
 
     simulationLogs.forEach((log, index) => {
@@ -54,11 +64,11 @@ export default function VerificationSimulator({ currency }) {
             setCurrentStep(3);
           }, 600);
         }
-      }, (index + 1) * 550);
+      }, (index + 1) * 500);
     });
   };
 
-  const embedCode = `<a href="https://founderledger.in/verify/${hash}" target="_blank" rel="noopener">\n  <img src="https://img.founderledger.in/badge/${hash}.svg" alt="FounderLedger Triple-Lock Verified Revenue" width="200" height="52" />\n</a>`;
+  const embedCode = `<a href="https://founderledger.in/verify/${hash}" target="_blank" rel="noopener">\n  <img src="https://img.founderledger.in/badge/${hash}-${badgeTheme}.svg" alt="FounderLedger Triple-Lock Verified Revenue" width="210" height="56" />\n</a>`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(embedCode);
@@ -119,11 +129,21 @@ export default function VerificationSimulator({ currency }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '1.25rem', marginBottom: '6px' }}>Step 1: Connect Your Revenue Stack</h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    Select your primary Indian payment gateway and provide your business GSTIN for cross-verification.
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '4px' }}>Step 1: Connect Your Revenue Stack</h3>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                      Select your primary Indian payment gateway and provide your business GSTIN for cross-verification.
+                    </p>
+                  </div>
+                  <button
+                    onClick={autofillSample}
+                    className="btn btn-secondary btn-sm"
+                    style={{ gap: '6px' }}
+                  >
+                    <Sparkles size={13} style={{ color: 'var(--brand-primary)' }} />
+                    <span>Autofill Sample Test Credentials</span>
+                  </button>
                 </div>
 
                 {/* Gateway Selector Cards */}
@@ -206,7 +226,7 @@ export default function VerificationSimulator({ currency }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'var(--bg-subtle)', borderRadius: '10px', border: '1px solid var(--border-light)', marginBottom: '24px' }}>
                   <Lock size={16} style={{ color: 'var(--success-dark)', flexShrink: 0 }} />
                   <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                    <strong>Zero-Trust Guarantee:</strong> FounderLedger only requests read-only subscription and invoice permissions. We never store bank login passwords or customer credit card details.
+                    <strong>Zero-Trust Guarantee:</strong> FounderLedger only requests read-only subscription and invoice permissions. We never store bank passwords or raw customer card numbers.
                   </span>
                 </div>
 
@@ -226,8 +246,11 @@ export default function VerificationSimulator({ currency }) {
               >
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <h3 style={{ fontSize: '1.25rem' }}>Step 2: AI Reconciliation in Progress</h3>
-                    <span style={{ fontWeight: 700, color: 'var(--brand-primary)' }}>{progress}% Complete</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Loader2 size={16} className="animate-spin" style={{ color: 'var(--brand-primary)' }} />
+                      <h3 style={{ fontSize: '1.25rem' }}>Step 2: AI Reconciliation in Progress</h3>
+                    </div>
+                    <span style={{ fontWeight: 700, color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>{progress}% Complete</span>
                   </div>
                   {/* Progress Bar */}
                   <div style={{ width: '100%', height: '8px', background: 'var(--bg-muted)', borderRadius: '9999px', overflow: 'hidden' }}>
@@ -317,28 +340,29 @@ export default function VerificationSimulator({ currency }) {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
-                      padding: '10px 16px',
-                      background: '#FFFFFF',
+                      padding: '12px 18px',
+                      background: badgeTheme === 'dark' ? '#090D16' : '#FFFFFF',
+                      color: badgeTheme === 'dark' ? '#FFFFFF' : '#090E1A',
                       border: '1.5px solid var(--brand-primary)',
                       borderRadius: '12px',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)',
+                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.18)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '10px'
                     }}>
-                      <ShieldCheck size={22} style={{ color: 'var(--brand-primary)' }} />
+                      <ShieldCheck size={24} style={{ color: 'var(--brand-primary)' }} />
                       <div>
                         <div style={{ fontSize: '0.6875rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           FOUNDERLEDGER VERIFIED
                         </div>
-                        <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#090E1A' }}>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>
                           ₹2.22 Cr ARR
                         </div>
                       </div>
                     </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
-                        Public Proof Block
+                        Proof Block ID
                       </div>
                       <div style={{ fontSize: '0.8125rem', fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)' }}>
                         #{hash}
@@ -346,13 +370,22 @@ export default function VerificationSimulator({ currency }) {
                     </div>
                   </div>
 
-                  <button 
-                    onClick={() => { setCurrentStep(1); setLogs([]); setProgress(0); }}
-                    className="btn btn-outline btn-sm"
-                  >
-                    <RefreshCw size={13} />
-                    <span>Run Another Sandbox Test</span>
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {/* Badge Theme Switcher */}
+                    <button
+                      onClick={() => setBadgeTheme(badgeTheme === 'light' ? 'dark' : 'light')}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      <span>{badgeTheme === 'light' ? 'Switch to Dark Badge' : 'Switch to Light Badge'}</span>
+                    </button>
+                    <button 
+                      onClick={() => { setCurrentStep(1); setLogs([]); setProgress(0); }}
+                      className="btn btn-outline btn-sm"
+                    >
+                      <RefreshCw size={13} />
+                      <span>Re-Run Test</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Embed Code Snippet */}

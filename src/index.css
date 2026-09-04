@@ -844,3 +844,34 @@ p {
   color: var(--success-dark);
   border: 1px solid var(--success-border);
 }
+
+/* ==========================================================================
+   Micro-Animations, Shimmer & Skeleton Loaders
+   ========================================================================== */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--bg-muted) 50%, var(--bg-subtle) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+@keyframes floatGentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.floating-glass-tag {
+  animation: floatGentle 4s ease-in-out infinite;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
