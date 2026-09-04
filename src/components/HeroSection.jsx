@@ -1,70 +1,152 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ShieldCheck, ArrowRight, CheckCircle2, TrendingUp, Sparkles, Lock, FileCheck2, Zap, BarChart3 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  CartesianGrid, 
+  ReferenceLine 
+} from 'recharts';
+import { 
+  ShieldCheck, 
+  ArrowRight, 
+  CheckCircle2, 
+  TrendingUp, 
+  Sparkles, 
+  Lock, 
+  FileCheck2, 
+  Zap, 
+  BarChart3, 
+  Activity, 
+  Radio, 
+  ExternalLink,
+  ChevronRight,
+  Clock,
+  Layers
+} from 'lucide-react';
 import { PLATFORM_DATA } from '../data/startups';
 import { formatCurrency } from '../utils/formatters';
+import { useCountUp } from '../utils/useCountUp';
 
 export default function HeroSection({ currency, onSelectStartup, onOpenVerify }) {
   const [selectedHeroIndex, setSelectedHeroIndex] = useState(0);
+  const [timeRange, setTimeRange] = useState('1Y');
+  const [activeMetricTab, setActiveMetricTab] = useState('revenue');
+  const [livePings, setLivePings] = useState([
+    { id: 1, type: 'razorpay.payment.authorized', amount: 14500, customer: 'Zepto Logistics', time: '2s ago' },
+    { id: 2, type: 'gst.b2b.invoice_reconciled', amount: 84000, customer: 'Groww Capital', time: '14s ago' },
+    { id: 3, type: 'upi.autopay.settled', amount: 4999, customer: 'DevStudio HQ', time: '29s ago' }
+  ]);
+
   const activeStartup = PLATFORM_DATA.startups[selectedHeroIndex] || PLATFORM_DATA.startups[0];
 
-  // Generate SVG curve
-  const dataPoints = activeStartup.monthlyHistory;
-  const maxVal = Math.max(...dataPoints.map(d => d.revenue)) * 1.15;
-  const minVal = Math.min(...dataPoints.map(d => d.revenue)) * 0.85;
-  const width = 640;
-  const height = 180;
-  const padX = 30;
-  const padY = 20;
-  const chartW = width - padX * 2;
-  const chartH = height - padY * 2;
+  // Simulated live webhook ping animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const customers = ['Swiggy Instamart', 'Razorpay Labs', 'CRED Club', 'Ola Fleet', 'Meesho Store', 'Postman Dev', 'Unacademy Plus'];
+      const eventTypes = ['razorpay.payment.authorized', 'upi.autopay.settled', 'gst.b2b.invoice_reconciled', 'subscription.charged'];
+      const randomAmount = Math.floor(Math.random() * 45000) + 2500;
+      const randomCust = customers[Math.floor(Math.random() * customers.length)];
+      const randomType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
 
-  const points = dataPoints.map((d, i) => {
-    const x = padX + (i / (dataPoints.length - 1)) * chartW;
-    const y = height - padY - ((d.revenue - minVal) / (maxVal - minVal)) * chartH;
-    return { x, y, ...d };
-  });
+      setLivePings(prev => [
+        { id: Date.now(), type: randomType, amount: randomAmount, customer: randomCust, time: 'Just now' },
+        ...prev.slice(0, 2)
+      ]);
+    }, 4500);
 
-  let pathD = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i];
-    const p1 = points[i + 1];
-    const cpX = (p0.x + p1.x) / 2;
-    pathD += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
+    return () => clearInterval(interval);
+  }, []);
+
+  // Filter history data based on time range
+  const rawData = activeStartup.monthlyHistory || [];
+  let chartData = rawData;
+  if (timeRange === '7D') {
+    chartData = [
+      { month: 'Mon', revenue: Math.round(activeStartup.mrr * 0.031) },
+      { month: 'Tue', revenue: Math.round(activeStartup.mrr * 0.034) },
+      { month: 'Wed', revenue: Math.round(activeStartup.mrr * 0.032) },
+      { month: 'Thu', revenue: Math.round(activeStartup.mrr * 0.038) },
+      { month: 'Fri', revenue: Math.round(activeStartup.mrr * 0.041) },
+      { month: 'Sat', revenue: Math.round(activeStartup.mrr * 0.035) },
+      { month: 'Sun', revenue: Math.round(activeStartup.mrr * 0.039) }
+    ];
+  } else if (timeRange === '30D') {
+    chartData = [
+      { month: 'W1', revenue: Math.round(activeStartup.mrr * 0.22) },
+      { month: 'W2', revenue: Math.round(activeStartup.mrr * 0.24) },
+      { month: 'W3', revenue: Math.round(activeStartup.mrr * 0.26) },
+      { month: 'W4', revenue: Math.round(activeStartup.mrr * 0.28) }
+    ];
+  } else if (timeRange === '90D') {
+    chartData = rawData.slice(-3);
   }
 
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padY} L ${points[0].x} ${height - padY} Z`;
+  // Animated counters
+  const animatedMRR = useCountUp(activeStartup.mrr, 900);
+  const animatedARR = useCountUp(activeStartup.arr, 900);
+
+  // Custom Recharts Tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const val = payload[0].value;
+      return (
+        <div className="recharts-custom-tooltip">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '6px' }}>
+            <span style={{ fontWeight: 600, color: '#94A3B8' }}>{label}</span>
+            <span className="badge badge-verified" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+              ✓ Verified Ledger
+            </span>
+          </div>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+            {formatCurrency(val, currency)}
+          </div>
+          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', fontSize: '0.72rem', color: '#CBD5E1', display: 'flex', gap: '8px' }}>
+            <span>Razorpay: <strong>{activeStartup.revenueBreakdown?.razorpay || 70}%</strong></span>
+            <span>UPI: <strong>{activeStartup.revenueBreakdown?.upiAutoPay || 20}%</strong></span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <section className="hero-main" id="hero-section">
       <div className="container">
-        {/* Animated Badge */}
+        
+        {/* Top Trust Pill */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           className="hero-pill-badge"
         >
           <span style={{
             background: 'var(--brand-primary)',
             color: '#FFFFFF',
-            fontSize: '0.7rem',
-            fontWeight: 800,
+            fontSize: '0.6875rem',
+            fontWeight: 700,
             padding: '2px 8px',
             borderRadius: '9999px',
-            textTransform: 'uppercase'
+            letterSpacing: '0.04em'
           }}>
             TRIPLE-LOCK
           </span>
-          <span>Verified Startup Revenue Engine (Razorpay + UPI + GST)</span>
-          <ArrowRight size={14} />
+          <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+            India's Verified Startup Revenue Platform (Razorpay + UPI + GST)
+          </span>
+          <ArrowRight size={14} style={{ color: 'var(--brand-primary)' }} />
         </motion.div>
 
         {/* Hero Title */}
         <motion.h1
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="hero-headline"
         >
           Verify Once. Build Trust Forever.<br />
@@ -73,28 +155,35 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
 
         {/* Hero Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="hero-lead-text"
         >
-          Connect your Razorpay, UPI QR, and GSTIN to prove authentic ARR, get listed on India's #1 transparent founder leaderboard, or buy & sell profitable businesses with zero escrow friction.
+          Connect your Razorpay, UPI QR, and GSTIN to prove authentic ARR, get discovered on India's premier verified founder leaderboard, or buy & sell profitable businesses with zero due-diligence friction.
         </motion.p>
 
-        {/* Hero Action CTAs */}
+        {/* Action CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '3.5rem' }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '12px', 
+            flexWrap: 'wrap', 
+            marginBottom: '48px' 
+          }}
         >
           <button onClick={onOpenVerify} className="btn btn-primary btn-lg">
-            <ShieldCheck size={20} strokeWidth={2.5} />
+            <ShieldCheck size={19} strokeWidth={2.4} />
             <span>Verify My Startup (Free)</span>
           </button>
           <a href="#leaderboard-section" className="btn btn-secondary btn-lg">
             <BarChart3 size={18} />
-            <span>Explore 450+ Verified Startups</span>
+            <span>Explore 480+ Startups</span>
           </a>
           <a href="#valuation-section" className="btn btn-outline btn-lg">
             <Sparkles size={18} />
@@ -102,254 +191,294 @@ export default function HeroSection({ currency, onSelectStartup, onOpenVerify })
           </a>
         </motion.div>
 
-        {/* Interactive Live Revenue Dashboard (Stripe / Linear precision) */}
+        {/* ==========================================================================
+            Realistic $50M SaaS Fintech Analytics Console (Recharts Powered)
+            ========================================================================== */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          initial={{ opacity: 0, scale: 0.98, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="glass-card-elevated"
-          style={{
-            maxWidth: '1040px',
-            margin: '0 auto',
-            textAlign: 'left',
-            overflow: 'hidden',
-            boxShadow: 'var(--shadow-xl), var(--shadow-glow)'
-          }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="dashboard-console"
         >
-          {/* Visualizer Window Header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '1rem 1.5rem',
-            background: 'var(--bg-subtle)',
-            borderBottom: '1px solid var(--border-light)',
-            flexWrap: 'wrap',
-            gap: '0.75rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444' }}></span>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#F59E0B' }}></span>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981' }}></span>
-            </div>
-
-            {/* Switch between demo startups */}
-            <div style={{
-              display: 'inline-flex',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-light)',
-              borderRadius: '9999px',
-              padding: '2px',
-              gap: '2px'
-            }}>
-              {PLATFORM_DATA.startups.slice(0, 3).map((st, idx) => (
+          {/* Top Console Navigation Bar */}
+          <div className="dashboard-header">
+            {/* Startup Selector Switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px', maxWidth: '100%' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '4px' }}>
+                VERIFIED LEDGER:
+              </span>
+              {PLATFORM_DATA.startups.slice(0, 5).map((st, idx) => (
                 <button
                   key={st.id}
                   onClick={() => setSelectedHeroIndex(idx)}
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: '9999px',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    background: selectedHeroIndex === idx ? 'var(--brand-primary)' : 'transparent',
-                    color: selectedHeroIndex === idx ? '#FFFFFF' : 'var(--text-muted)',
-                    transition: 'all 0.2s'
-                  }}
+                  className={`btn btn-sm ${selectedHeroIndex === idx ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ fontSize: '0.8125rem', padding: '5px 12px', borderRadius: '8px' }}
                 >
-                  {st.name}
+                  <span>{st.name}</span>
+                  {selectedHeroIndex === idx && (
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.25)', padding: '1px 5px', borderRadius: '4px' }}>
+                      {st.categoryLabel}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
 
-            <div className="badge-verified">
-              <ShieldCheck size={14} strokeWidth={2.5} />
-              <span>Triple-Lock Certified</span>
+            {/* Time Range Selector */}
+            <div className="dashboard-tabs">
+              {['7D', '30D', '90D', '1Y'].map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`dashboard-tab-btn ${timeRange === range ? 'active' : ''}`}
+                >
+                  {range}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Visualizer Body Grid */}
-          <div style={{
-            padding: '1.75rem',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '1.75rem'
-          }}>
-            {/* Left Chart Section */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    background: 'var(--brand-gradient)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontWeight: 800,
-                    fontSize: '1.1rem'
-                  }}>
-                    {activeStartup.founder.avatar}
+          {/* Console Main Body Grid */}
+          <div className="dashboard-grid">
+            
+            {/* Left Sidebar: Live Settlement Feeds & Audit Status */}
+            <div className="dashboard-sidebar">
+              {/* Active Startup Identity Card */}
+              <div style={{ background: 'var(--bg-surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>
+                    {activeStartup.name}
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '2px' }}>{activeStartup.name}</h3>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {activeStartup.categoryLabel} • {activeStartup.location} • Founded {activeStartup.founded}
-                    </div>
+                  <span className="badge badge-verified" style={{ fontSize: '0.7rem' }}>
+                    <ShieldCheck size={12} />
+                    <span>Triple-Lock</span>
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: '1.4', marginBottom: '12px' }}>
+                  {activeStartup.tagline}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>GSTIN:</span>
+                    <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{activeStartup.gstin}</strong>
                   </div>
-                </div>
-
-                <span className={activeStartup.dealStatus === 'open_acquisition' ? 'badge-deal-open' : 'badge-gold'} style={{ padding: '3px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700 }}>
-                  {activeStartup.dealLabel}
-                </span>
-              </div>
-
-              {/* 3 Metric Cards */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '0.75rem',
-                background: 'var(--bg-subtle)',
-                padding: '1rem',
-                borderRadius: '16px',
-                border: '1px solid var(--border-subtle)'
-              }}>
-                <div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Verified Run-rate</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 800 }}>{formatCurrency(activeStartup.mrr, currency, true)}</div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--success-dark)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    <TrendingUp size={12} /> +{activeStartup.growthMoM}% MoM
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Proof Hash:</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)', fontWeight: 600 }}>
+                      {activeStartup.ledgerHash}
+                    </span>
                   </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Annual ARR</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--brand-primary)' }}>{formatCurrency(activeStartup.arr, currency)}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>100% Audited</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Net Margin</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--success-dark)' }}>{activeStartup.netMargin}%</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>After GST & Costs</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Audit Date:</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{activeStartup.auditDate}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Dynamic SVG Revenue Curve */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    12-Month Reconciled Revenue Trajectory
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--brand-primary)' }}>
-                    Audited {activeStartup.auditDate}
-                  </span>
+              {/* Live Webhook Incoming Stream */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span className="pulse-dot"></span>
+                    <span>Live Webhook Feed</span>
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Razorpay v2</span>
                 </div>
-                <div style={{ width: '100%', height: '170px' }}>
-                  <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                    <defs>
-                      <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563EB" stopOpacity="0.28" />
-                        <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-                    <line x1={padX} y1={padY} x2={width - padX} y2={padY} stroke="rgba(226, 232, 240, 0.4)" strokeDasharray="3 3" />
-                    <line x1={padX} y1={padY + chartH / 2} x2={width - padX} y2={padY + chartH / 2} stroke="rgba(226, 232, 240, 0.4)" strokeDasharray="3 3" />
-                    <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} stroke="rgba(226, 232, 240, 0.6)" />
-                    
-                    <path d={areaD} fill="url(#heroGradient)" />
-                    <path d={pathD} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                    
-                    {points.map((p, i) => (
-                      <g key={i}>
-                        <circle cx={p.x} cy={p.y} r={3.5} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} />
-                        {(i % 3 === 0 || i === points.length - 1) && (
-                          <text x={p.x} y={height - 4} fontSize={9.5} fill="#94A3B8" fontFamily="'JetBrains Mono', monospace" textAnchor="middle">
-                            {p.month}
-                          </text>
-                        )}
-                      </g>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <AnimatePresence>
+                    {livePings.map(ping => (
+                      <motion.div
+                        key={ping.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        transition={{ duration: 0.25 }}
+                        style={{
+                          background: 'var(--bg-surface)',
+                          border: '1px solid var(--border-light)',
+                          borderRadius: '8px',
+                          padding: '8px 10px',
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)', fontWeight: 600, fontSize: '0.7rem' }}>
+                            {ping.type.split('.')[1]}
+                          </span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>{ping.time}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{ping.customer}</span>
+                          <strong style={{ color: 'var(--text-primary)' }}>+₹{ping.amount.toLocaleString('en-IN')}</strong>
+                        </div>
+                      </motion.div>
                     ))}
-                  </svg>
+                  </AnimatePresence>
                 </div>
               </div>
+
+              <button 
+                onClick={() => onSelectStartup(activeStartup)} 
+                className="btn btn-outline btn-sm"
+                style={{ width: '100%', marginTop: 'auto', gap: '6px' }}
+              >
+                <span>Full Ledger Inspection</span>
+                <ExternalLink size={13} />
+              </button>
             </div>
 
-            {/* Right Verification Sidebar */}
-            <div style={{
-              background: 'var(--bg-subtle)',
-              border: '1px solid var(--border-light)',
-              borderRadius: '20px',
-              padding: '1.25rem',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              gap: '1rem'
-            }}>
-              <div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
-                  <ShieldCheck size={16} strokeWidth={2.5} color="var(--brand-primary)" />
-                  <span>Triple-Lock Audit Log</span>
+            {/* Right Panel: Metric Highlights & Interactive Recharts Graph */}
+            <div className="dashboard-main-panel">
+              
+              {/* 4 Glassmorphism Metric Cards with Animated Counters */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+                
+                {/* Verified MRR */}
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    VERIFIED MRR
+                  </div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                    {formatCurrency(animatedMRR, currency)}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '0.75rem', color: 'var(--success-dark)', fontWeight: 600 }}>
+                    <TrendingUp size={13} />
+                    <span>+{activeStartup.growthMoM}% MoM</span>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.65rem', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '10px' }}>
-                    <CheckCircle2 size={16} color="var(--success)" style={{ marginTop: '2px', flexShrink: 0 }} />
-                    <div style={{ fontSize: '0.8rem' }}>
-                      <strong style={{ display: 'block', color: 'var(--text-primary)' }}>Razorpay Webhook Live</strong>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Read-only OAuth token matched</span>
-                    </div>
+                {/* Annual Run Rate */}
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    VERIFIED ARR
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.65rem', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '10px' }}>
-                    <CheckCircle2 size={16} color="var(--success)" style={{ marginTop: '2px', flexShrink: 0 }} />
-                    <div style={{ fontSize: '0.8rem' }}>
-                      <strong style={{ display: 'block', color: 'var(--text-primary)' }}>UPI AutoPay Mandates</strong>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Recurring subscription mandates</span>
-                    </div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--brand-primary)', letterSpacing: '-0.03em' }}>
+                    {formatCurrency(animatedARR, currency)}
                   </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    Audit Score: <strong style={{ color: 'var(--text-primary)' }}>100% Match</strong>
+                  </div>
+                </div>
 
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0.65rem', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '10px' }}>
-                    <CheckCircle2 size={16} color="var(--success)" style={{ marginTop: '2px', flexShrink: 0 }} />
-                    <div style={{ fontSize: '0.8rem' }}>
-                      <strong style={{ display: 'block', color: 'var(--text-primary)' }}>GSTIN E-Invoice Reconciled</strong>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{activeStartup.gstin} (100% Match)</span>
-                    </div>
+                {/* Net Margin */}
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    NET PROFIT MARGIN
+                  </div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                    {activeStartup.netMargin}%
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    Churn: <strong style={{ color: 'var(--text-primary)' }}>{activeStartup.churnRate}% / mo</strong>
+                  </div>
+                </div>
+
+                {/* Asking Price or Valuation */}
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    EST. VALUATION
+                  </div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+                    {activeStartup.askingPrice ? formatCurrency(activeStartup.askingPrice, currency) : formatCurrency(activeStartup.arr * 4.2, currency)}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600, marginTop: '4px' }}>
+                    {activeStartup.multiple || '4.2x Multiple'}
                   </div>
                 </div>
               </div>
 
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                  SHA-256 Ledger Audit Hash
+              {/* Interactive Recharts Area Chart */}
+              <div style={{ 
+                background: 'var(--bg-subtle)', 
+                border: '1px solid var(--border-light)', 
+                borderRadius: '12px', 
+                padding: '16px 12px 8px 12px',
+                position: 'relative'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px 12px 8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Activity size={16} style={{ color: 'var(--brand-primary)' }} />
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      Audited Revenue Trajectory ({timeRange})
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2563EB' }}></span>
+                      Razorpay Settlement
+                    </span>
+                  </div>
                 </div>
-                <div style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  background: 'var(--bg-card)',
-                  padding: '6px 10px',
-                  borderRadius: '8px',
-                  border: '1px dashed var(--border-focus)',
-                  color: 'var(--brand-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <span>{activeStartup.ledgerHash}</span>
-                  <FileCheck2 size={14} color="var(--success)" />
+
+                <div style={{ width: '100%', height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="heroRevenueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#2563EB" stopOpacity={0.28} />
+                          <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
+                      <XAxis 
+                        dataKey="month" 
+                        stroke="#94A3B8" 
+                        fontSize={11} 
+                        tickLine={false} 
+                        axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} 
+                      />
+                      <YAxis 
+                        stroke="#94A3B8" 
+                        fontSize={11} 
+                        tickLine={false} 
+                        axisLine={false}
+                        tickFormatter={(v) => currency === 'USD' ? `$${(v/83000).toFixed(0)}k` : `₹${(v/100000).toFixed(1)}L`} 
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="revenue" 
+                        stroke="#2563EB" 
+                        strokeWidth={2.5} 
+                        fillOpacity={1} 
+                        fill="url(#heroRevenueGradient)" 
+                        activeDot={{ r: 6, fill: '#2563EB', stroke: '#FFFFFF', strokeWidth: 2 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 
-              <button
-                onClick={() => onSelectStartup(activeStartup)}
-                className="btn btn-secondary btn-sm w-full"
-                style={{ marginTop: '0.25rem' }}
-              >
-                <span>View Full Audit Data Room</span>
-                <ArrowRight size={14} />
-              </button>
+              {/* Bottom Security Compliance Bar */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                padding: '8px 12px', 
+                background: 'var(--bg-subtle)', 
+                borderRadius: '8px', 
+                border: '1px solid var(--border-light)',
+                fontSize: '0.75rem',
+                color: 'var(--text-secondary)',
+                flexWrap: 'wrap',
+                gap: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Lock size={13} style={{ color: 'var(--success-dark)' }} />
+                  <span>256-bit Encrypted Read-Only API Tunnel</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span>GSTIN Check: <strong>Active</strong></span>
+                  <span>MCA CIN: <strong>Validated</strong></span>
+                  <span style={{ color: 'var(--success-dark)', fontWeight: 600 }}>● 99.99% Uptime</span>
+                </div>
+              </div>
+
             </div>
           </div>
         </motion.div>
+
       </div>
     </section>
   );

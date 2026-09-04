@@ -1,212 +1,237 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { Check, ShieldCheck, Zap, Sparkles, HelpCircle } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
 export default function PricingSection({ currency, onOpenVerify }) {
+  const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' or 'annual'
+
   return (
-    <section style={{ padding: '5.5rem 0' }} id="pricing-section">
+    <section className="section-wrapper" id="pricing-section">
       <div className="container">
+        
         {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 3.5rem auto' }}>
-          <span style={{
-            display: 'inline-block',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            color: 'var(--brand-primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            background: 'var(--brand-soft)',
-            padding: '4px 14px',
-            borderRadius: '9999px',
-            marginBottom: '0.85rem'
-          }}>
-            TRANSPARENT PRICING
+        <div className="section-header">
+          <span className="badge badge-brand" style={{ marginBottom: '12px' }}>
+            <Sparkles size={13} />
+            <span>TRANSPARENT PRICING</span>
           </span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.03em' }}>
-            Simple Plans for Builders & Acquirers
+          <h2 style={{ marginBottom: '12px' }}>
+            Predictable Pricing for Builders & Acquirers
           </h2>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
-            Free forever for founders who want to verify their revenue and join the national startup ledger.
+          <p className="lead-text">
+            Free forever for bootstrapped founders to verify revenue and join the national leaderboard. Upgrade for enterprise data rooms and M&A escrow.
           </p>
+
+          {/* Billing Cycle Switcher */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg-muted)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-light)', marginTop: '24px' }}>
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                background: billingCycle === 'monthly' ? 'var(--bg-surface)' : 'transparent',
+                color: billingCycle === 'monthly' ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontWeight: 600,
+                fontSize: '0.8125rem',
+                cursor: 'pointer',
+                boxShadow: billingCycle === 'monthly' ? 'var(--shadow-xs)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              Monthly Billing
+            </button>
+            <button
+              onClick={() => setBillingCycle('annual')}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                background: billingCycle === 'annual' ? 'var(--bg-surface)' : 'transparent',
+                color: billingCycle === 'annual' ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontWeight: 600,
+                fontSize: '0.8125rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: billingCycle === 'annual' ? 'var(--shadow-xs)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>Annual Billing</span>
+              <span style={{ fontSize: '0.6875rem', background: 'var(--success-soft)', color: 'var(--success-dark)', padding: '2px 6px', borderRadius: '9999px', fontWeight: 700 }}>
+                SAVE 20%
+              </span>
+            </button>
+          </div>
         </div>
 
-        {/* Pricing Cards Grid */}
+        {/* 3 Pricing Cards */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '2rem',
+          gap: '24px',
           maxWidth: '1140px',
-          margin: '0 auto'
+          margin: '0 auto',
+          alignItems: 'stretch'
         }}>
-          {/* Free Plan */}
+          
+          {/* 1. Starter Free */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="glass-card"
             style={{
-              padding: '2.5rem',
+              padding: '32px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              background: 'var(--bg-surface)'
             }}
           >
             <div>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.35rem' }}>Founder Basic</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                For bootstrapped solo founders starting out
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '1.25rem' }}>Founder Starter</h3>
+                <span className="badge badge-neutral">Free Forever</span>
+              </div>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+                For solo founders & early micro-SaaS builders
               </p>
-              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', fontWeight: 900, marginBottom: '1.75rem' }}>
-                ₹0 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>/ forever</span>
+
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.04em', marginBottom: '24px', lineHeight: '1' }}>
+                ₹0 <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: 500 }}>/ month</span>
               </div>
 
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '2rem' }}>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>1 Gateway Connection (Razorpay/PhonePe)</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Public FounderLedger Profile URL</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Embeddable Verified SVG Seal Badge</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Bharat Startup Leaderboard Listing</span>
-                </li>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+                {[
+                  '1 Payment Gateway Connection (Razorpay)',
+                  'Public Verified FounderLedger Profile URL',
+                  'Embeddable Live Verified SVG Badge',
+                  'National Startup Leaderboard Listing',
+                  'Community Slack & Founder Forum Access'
+                ].map((item, i) => (
+                  <li key={i} style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Check size={16} style={{ color: 'var(--success-dark)', flexShrink: 0 }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <button onClick={onOpenVerify} className="btn btn-secondary w-full">
+            <button onClick={onOpenVerify} className="btn btn-secondary" style={{ width: '100%' }}>
               Claim Free Profile
             </button>
           </motion.div>
 
-          {/* Pro Plan (Featured) */}
+          {/* 2. Founder Pro (Highlighted with Royal Blue Subtle Glow) */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="glass-card"
+            className="glass-card pricing-pro-glow"
             style={{
-              padding: '2.5rem',
+              padding: '32px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              borderColor: 'var(--brand-primary)',
-              boxShadow: 'var(--shadow-xl), var(--shadow-glow)',
-              position: 'relative',
-              transform: 'scale(1.02)'
+              background: 'var(--bg-surface)'
             }}
           >
-            <div style={{
-              position: 'absolute',
-              top: '-12px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'var(--brand-gradient)',
-              color: '#FFFFFF',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              letterSpacing: '0.05em',
-              padding: '4px 14px',
-              borderRadius: '9999px',
-              textTransform: 'uppercase'
-            }}>
+            <div className="pricing-pro-badge">
               MOST POPULAR
             </div>
 
             <div>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.35rem' }}>Founder Pro</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                For fast-growing B2B & micro-SaaS teams
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--brand-primary)' }}>Founder Pro</h3>
+                <span className="badge badge-brand">Audit Pro</span>
+              </div>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+                For fast-scaling B2B, DevTools & Micro-SaaS
               </p>
-              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', fontWeight: 900, marginBottom: '1.75rem' }}>
-                {currency === 'USD' ? '$29' : '₹2,499'} <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>/ month</span>
+
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.04em', marginBottom: '24px', lineHeight: '1' }}>
+                {billingCycle === 'annual' ? (currency === 'USD' ? '$24' : '₹1,999') : (currency === 'USD' ? '$29' : '₹2,499')}
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: 500 }}> / month</span>
               </div>
 
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '2rem' }}>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Unlimited Gateways + UPI AutoPay + Cashfree</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Automated GSTR-1 GSTIN Reconciliation</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Password-Protected Investor Data Room</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Real-time Webhook API Sync</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Certified Valuation Summary Report</span>
-                </li>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+                {[
+                  'Unlimited Gateways (Razorpay + Stripe + Cashfree)',
+                  'Automated GSTR-1 & 3B GSTIN Reconciliation',
+                  'Encrypted Password-Protected Investor Deal Room',
+                  'Real-Time Webhook Reconciliation & Live Pings',
+                  'Certified Valuation Multiples & Diligence Report',
+                  'Priority Verification within 2 Hours'
+                ].map((item, i) => (
+                  <li key={i} style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Check size={16} style={{ color: 'var(--brand-primary)', flexShrink: 0 }} />
+                    <span style={{ fontWeight: i === 2 || i === 4 ? 600 : 400, color: i === 2 || i === 4 ? 'var(--text-primary)' : 'inherit' }}>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <button onClick={onOpenVerify} className="btn btn-primary w-full">
+            <button onClick={onOpenVerify} className="btn btn-primary" style={{ width: '100%' }}>
               Start 14-Day Free Trial
             </button>
           </motion.div>
 
-          {/* M&A Escrow Plan */}
+          {/* 3. M&A Dealmaker */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
             className="glass-card"
             style={{
-              padding: '2.5rem',
+              padding: '32px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              background: 'var(--bg-surface)'
             }}
           >
             <div>
-              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.35rem' }}>Acquisition Escrow</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                For buyers & sellers closing M&A deals
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '1.25rem' }}>M&A Dealmaker</h3>
+                <span className="badge badge-neutral">Institutional</span>
+              </div>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+                For angel syndicates, micro-PEs & strategic acquirers
               </p>
-              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '2.8rem', fontWeight: 900, marginBottom: '1.75rem' }}>
-                1.5% <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>/ closing fee</span>
+
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.04em', marginBottom: '24px', lineHeight: '1' }}>
+                1.5% <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: 500 }}>/ closed transaction</span>
               </div>
 
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '2rem' }}>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>ICICI / Axis Bank Regulated Escrow Account</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>Standardized Indian Tech SPA Agreements</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>MCA 21 Director & Share Transfer Assistance</span>
-                </li>
-                <li style={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Check size={16} color="var(--success)" strokeWidth={2.5} />
-                  <span>IP Asset, Domain, & Repository Handover Verification</span>
-                </li>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+                {[
+                  'Regulated Escrow Account Holding',
+                  'Standardized Indian SaaS SPA Agreements',
+                  'MCA 21 Director & Equity Share Transfer Ops',
+                  'GitHub Repo, AWS & Domain IP Escrow Handover',
+                  'Dedicated M&A Legal & Tax Advisor'
+                ].map((item, i) => (
+                  <li key={i} style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Check size={16} style={{ color: 'var(--success-dark)', flexShrink: 0 }} />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            <a href="#marketplace-section" className="btn btn-secondary w-full">
-              Browse M&A Deals
+            <a href="#marketplace-section" className="btn btn-secondary" style={{ width: '100%' }}>
+              Browse Marketplace
             </a>
           </motion.div>
+
         </div>
+
       </div>
     </section>
   );

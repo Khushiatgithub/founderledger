@@ -1,68 +1,82 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Search, Moon, Sun, Menu, X, ArrowRight, Zap } from 'lucide-react';
+import { ShieldCheck, Search, Moon, Sun, Menu, X, ArrowRight, Zap, Command } from 'lucide-react';
 
 export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenCmd, onOpenVerify }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="site-header-fixed">
-      <div className="container nav-row">
+    <header className="navbar-fixed">
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        
         {/* Brand Logo */}
-        <a href="#" className="brand-link" aria-label="FounderLedger Home">
-          <div className="brand-logo-icon">
-            <ShieldCheck size={22} strokeWidth={2.5} />
-          </div>
-          <span>FounderLedger</span>
-          <span style={{
-            fontSize: '0.65rem',
-            fontWeight: 800,
-            background: 'var(--success-soft)',
-            color: 'var(--success-dark)',
-            padding: '2px 8px',
-            borderRadius: '9999px',
-            border: '1px solid var(--success-border)',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase'
+        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }} aria-label="FounderLedger Home">
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: 'var(--brand-primary)',
+            color: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)'
           }}>
-            BHARAT
-          </span>
+            <ShieldCheck size={20} strokeWidth={2.4} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+              FounderLedger
+            </span>
+            <span style={{
+              fontSize: '0.625rem',
+              fontWeight: 800,
+              background: 'var(--brand-soft)',
+              color: 'var(--brand-primary)',
+              padding: '2px 6px',
+              borderRadius: '9999px',
+              border: '1px solid var(--brand-border)',
+              letterSpacing: '0.04em'
+            }}>
+              BHARAT
+            </span>
+          </div>
         </a>
 
         {/* Desktop Nav Links */}
-        <nav className="desktop-nav" style={{ display: 'none' }} id="desktop-nav">
-          <ul className="nav-menu-list">
-            <li><a href="#leaderboard-section" className="nav-item-link">Leaderboard</a></li>
-            <li><a href="#verify-section" className="nav-item-link">Verify Revenue</a></li>
-            <li><a href="#marketplace-section" className="nav-item-link">Marketplace</a></li>
-            <li><a href="#valuation-section" className="nav-item-link">Valuation Engine</a></li>
-            <li><a href="#why-us-section" className="nav-item-link">Trust Engine</a></li>
-            <li><a href="#pricing-section" className="nav-item-link">Pricing</a></li>
-          </ul>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="hide-on-tablet">
+          <a href="#leaderboard-section" className="nav-link">Leaderboard</a>
+          <a href="#verify-section" className="nav-link">Verification</a>
+          <a href="#marketplace-section" className="nav-link">M&A Deals</a>
+          <a href="#valuation-section" className="nav-link">Valuation</a>
+          <a href="#pricing-section" className="nav-link">Pricing</a>
         </nav>
 
-        {/* Nav Controls & Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Currency Switcher */}
+        {/* Nav Right Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          
+          {/* Currency Toggle (₹ INR / $ USD) */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            background: 'var(--bg-subtle)',
+            background: 'var(--bg-muted)',
             border: '1px solid var(--border-light)',
-            borderRadius: '9999px',
+            borderRadius: '8px',
             padding: '2px',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             fontWeight: 600
           }}>
             <button
               onClick={() => setCurrency('INR')}
               style={{
-                padding: '4px 10px',
-                borderRadius: '9999px',
-                background: currency === 'INR' ? 'var(--bg-card)' : 'transparent',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: 'none',
+                background: currency === 'INR' ? 'var(--bg-surface)' : 'transparent',
                 color: currency === 'INR' ? 'var(--text-primary)' : 'var(--text-muted)',
                 boxShadow: currency === 'INR' ? 'var(--shadow-xs)' : 'none',
-                transition: 'all 0.2s'
+                cursor: 'pointer',
+                fontWeight: 600
               }}
             >
               ₹ INR
@@ -70,12 +84,14 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
             <button
               onClick={() => setCurrency('USD')}
               style={{
-                padding: '4px 10px',
-                borderRadius: '9999px',
-                background: currency === 'USD' ? 'var(--bg-card)' : 'transparent',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: 'none',
+                background: currency === 'USD' ? 'var(--bg-surface)' : 'transparent',
                 color: currency === 'USD' ? 'var(--text-primary)' : 'var(--text-muted)',
                 boxShadow: currency === 'USD' ? 'var(--shadow-xs)' : 'none',
-                transition: 'all 0.2s'
+                cursor: 'pointer',
+                fontWeight: 600
               }}
             >
               $ USD
@@ -85,85 +101,84 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
           {/* Command Palette Trigger */}
           <button
             onClick={onOpenCmd}
-            className="cmd-btn"
+            className="hide-on-mobile"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.45rem 0.85rem',
-              background: 'var(--bg-subtle)',
+              gap: '6px',
+              padding: '6px 10px',
+              background: 'var(--bg-muted)',
               border: '1px solid var(--border-light)',
-              borderRadius: '10px',
+              borderRadius: '8px',
               color: 'var(--text-muted)',
-              fontSize: '0.85rem',
-              transition: 'all 0.2s'
+              fontSize: '0.75rem',
+              cursor: 'pointer'
             }}
           >
-            <Search size={14} />
-            <span className="cmd-text-label" style={{ display: 'none' }}>Search</span>
-            <span style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.7rem',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-light)',
-              padding: '1px 5px',
-              borderRadius: '4px'
+            <Search size={13} />
+            <span>Search</span>
+            <kbd style={{ 
+              background: 'var(--bg-surface)', 
+              padding: '1px 5px', 
+              borderRadius: '4px', 
+              border: '1px solid var(--border-light)', 
+              fontSize: '0.6875rem',
+              fontWeight: 600
             }}>
               ⌘K
-            </span>
+            </kbd>
           </button>
 
-          {/* Theme Toggle */}
+          {/* Dark/Light Theme Toggle */}
           <button
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            aria-label="Toggle Theme"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle Dark Mode"
             style={{
-              width: '36px',
-              height: '36px',
+              width: '34px',
+              height: '34px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-light)',
+              background: 'var(--bg-muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '10px',
-              border: '1px solid var(--border-light)',
-              background: 'var(--bg-card)',
-              color: 'var(--text-secondary)'
+              color: 'var(--text-secondary)',
+              cursor: 'pointer'
             }}
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          {/* Primary CTA */}
-          <button
-            onClick={onOpenVerify}
-            className="btn btn-primary btn-sm"
-            style={{ display: 'none' }}
-            id="nav-verify-btn"
-          >
-            <ShieldCheck size={16} strokeWidth={2.5} />
-            <span>Verify Startup</span>
+          {/* Primary CTA Button */}
+          <button onClick={onOpenVerify} className="btn btn-primary btn-sm hide-on-mobile">
+            <Zap size={14} />
+            <span>Verify ARR</span>
           </button>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="mobile-menu-btn"
+            className="hide-on-desktop"
             style={{
               width: '36px',
               height: '36px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-light)',
+              background: 'var(--bg-muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '10px',
-              border: '1px solid var(--border-light)',
-              background: 'var(--bg-card)'
+              color: 'var(--text-primary)',
+              cursor: 'pointer'
             }}
           >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
+
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -171,42 +186,31 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             style={{
-              background: 'var(--bg-card-elevated)',
+              position: 'absolute',
+              top: '72px',
+              left: 0,
+              right: 0,
+              background: 'var(--bg-surface)',
               borderBottom: '1px solid var(--border-light)',
-              overflow: 'hidden'
+              padding: '16px 24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              boxShadow: 'var(--shadow-lg)'
             }}
           >
-            <div className="container" style={{ padding: '1.5rem 1rem' }}>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <li><a href="#leaderboard-section" onClick={() => setMobileMenuOpen(false)} className="nav-item-link" style={{ display: 'block', padding: '0.5rem 0' }}>Leaderboard</a></li>
-                <li><a href="#verify-section" onClick={() => setMobileMenuOpen(false)} className="nav-item-link" style={{ display: 'block', padding: '0.5rem 0' }}>Verify Revenue</a></li>
-                <li><a href="#marketplace-section" onClick={() => setMobileMenuOpen(false)} className="nav-item-link" style={{ display: 'block', padding: '0.5rem 0' }}>Marketplace</a></li>
-                <li><a href="#valuation-section" onClick={() => setMobileMenuOpen(false)} className="nav-item-link" style={{ display: 'block', padding: '0.5rem 0' }}>Valuation Engine</a></li>
-                <li><a href="#why-us-section" onClick={() => setMobileMenuOpen(false)} className="nav-item-link" style={{ display: 'block', padding: '0.5rem 0' }}>Trust Engine</a></li>
-                <li><a href="#pricing-section" onClick={() => setMobileMenuOpen(false)} className="nav-item-link" style={{ display: 'block', padding: '0.5rem 0' }}>Pricing</a></li>
-              </ul>
-              <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-light)' }}>
-                <button
-                  onClick={() => { setMobileMenuOpen(false); onOpenVerify(); }}
-                  className="btn btn-primary w-full"
-                >
-                  <ShieldCheck size={18} strokeWidth={2.5} />
-                  <span>Verify My Startup (Free)</span>
-                </button>
-              </div>
-            </div>
+            <a href="#leaderboard-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Leaderboard</a>
+            <a href="#verify-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Verification</a>
+            <a href="#marketplace-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">M&A Deals</a>
+            <a href="#valuation-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Valuation</a>
+            <a href="#pricing-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Pricing</a>
+            <button onClick={() => { setMobileMenuOpen(false); onOpenVerify(); }} className="btn btn-primary" style={{ width: '100%', marginTop: '8px' }}>
+              <ShieldCheck size={16} />
+              <span>Verify My Startup</span>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <style>{`
-        @media (min-width: 900px) {
-          #desktop-nav { display: block !important; }
-          #nav-verify-btn { display: inline-flex !important; }
-          .cmd-text-label { display: inline !important; }
-          .mobile-menu-btn { display: none !important; }
-        }
-      `}</style>
     </header>
   );
 }

@@ -1,14 +1,32 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ShieldCheck, ArrowRight, CheckCircle2, Copy, RefreshCw, Terminal, Check, Zap, CreditCard, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ShieldCheck, 
+  ArrowRight, 
+  CheckCircle2, 
+  Copy, 
+  RefreshCw, 
+  Terminal, 
+  Check, 
+  Zap, 
+  CreditCard, 
+  FileText,
+  Key,
+  Database,
+  Lock,
+  ExternalLink,
+  Code
+} from 'lucide-react';
 
 export default function VerificationSimulator({ currency }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedGateway, setSelectedGateway] = useState('razorpay');
+  const [gstinInput, setGstinInput] = useState('29AAACD4982R1Z8');
+  const [apiKeyInput, setApiKeyInput] = useState('rzp_live_9x8kL2n0a1Pq');
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState([]);
   const [copied, setCopied] = useState(false);
-  const [hash, setHash] = useState('FL-2026-IN-99B4');
+  const [hash, setHash] = useState('FL-2026-KA-88A92F');
 
   const startReconciliation = () => {
     setCurrentStep(2);
@@ -16,12 +34,12 @@ export default function VerificationSimulator({ currency }) {
     setLogs([]);
 
     const simulationLogs = [
-      { text: "Connecting to Razorpay Webhook OAuth 2.0 endpoint...", time: "0.2s", pct: 20 },
-      { text: "Ingesting 1,240 subscription invoice receipts across 12 months...", time: "0.8s", pct: 40 },
-      { text: "Scrubbing test mode transactions, chargebacks, and refund entries...", time: "1.4s", pct: 60 },
-      { text: "Validating GSTR-1 GSTIN electronic filing match (Reconciliation: 100%)...", time: "2.1s", pct: 85 },
-      { text: "Generating SHA-256 Ledger Block #FL-2026-IN-99B4...", time: "2.8s", pct: 100 },
-      { text: "SUCCESS: Triple-Lock Verification Complete. Certified ARR: ₹18.5 Lakhs/mo", time: "3.2s", pct: 100 }
+      { text: "Establishing read-only OAuth 2.0 tunnel to Razorpay API...", time: "0.2s", pct: 20 },
+      { text: "Ingesting 14,280 subscription transactions across past 12 months...", time: "0.7s", pct: 40 },
+      { text: "Scrubbing test tokens, refunds, chargebacks, and gateway fees...", time: "1.3s", pct: 60 },
+      { text: "Validating GSTR-3B electronic tax filing against MCA CIN registry...", time: "1.9s", pct: 80 },
+      { text: "Cross-reconciling settlement bank statements (100% Match)...", time: "2.5s", pct: 95 },
+      { text: "SUCCESS: SHA-256 Ledger Block Minted. Certified ARR: ₹2.22 Cr", time: "3.0s", pct: 100 }
     ];
 
     simulationLogs.forEach((log, index) => {
@@ -34,13 +52,13 @@ export default function VerificationSimulator({ currency }) {
             const randomHash = `FL-2026-IN-${Math.floor(1000 + Math.random() * 9000).toString(16).toUpperCase()}`;
             setHash(randomHash);
             setCurrentStep(3);
-          }, 800);
+          }, 600);
         }
-      }, (index + 1) * 600);
+      }, (index + 1) * 550);
     });
   };
 
-  const embedCode = `<a href="https://founderledger.in/verify/${hash}" target="_blank">\n  <img src="https://img.founderledger.in/badge/${hash}.svg" alt="FounderLedger Verified Revenue" width="180" />\n</a>`;
+  const embedCode = `<a href="https://founderledger.in/verify/${hash}" target="_blank" rel="noopener">\n  <img src="https://img.founderledger.in/badge/${hash}.svg" alt="FounderLedger Triple-Lock Verified Revenue" width="200" height="52" />\n</a>`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(embedCode);
@@ -49,267 +67,330 @@ export default function VerificationSimulator({ currency }) {
   };
 
   return (
-    <section style={{ padding: '5.5rem 0', background: 'linear-gradient(180deg, var(--bg-canvas) 0%, var(--bg-subtle) 100%)', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)' }} id="verify-section">
+    <section className="section-wrapper" style={{ background: 'var(--bg-subtle)', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)' }} id="verify-section">
       <div className="container">
+        
         {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 3rem auto' }}>
-          <span style={{
-            display: 'inline-block',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            color: 'var(--brand-primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            background: 'var(--brand-soft)',
-            padding: '4px 14px',
-            borderRadius: '9999px',
-            marginBottom: '0.85rem'
-          }}>
-            INTERACTIVE VERIFICATION ENGINE
+        <div className="section-header">
+          <span className="badge badge-brand" style={{ marginBottom: '12px' }}>
+            <Zap size={13} />
+            <span>INTERACTIVE VERIFICATION ENGINE</span>
           </span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+          <h2 style={{ marginBottom: '12px' }}>
             How Verification Works in 3 Simple Steps
           </h2>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
-            Experience our automated Triple-Lock audit engine right now in interactive sandbox mode.
+          <p className="lead-text">
+            Experience our automated Triple-Lock verification pipeline in interactive sandbox mode. Test with simulated Razorpay credentials.
           </p>
         </div>
 
-        {/* Wizard Card Container */}
-        <div className="glass-card-elevated" style={{ maxWidth: '920px', margin: '0 auto', overflow: 'hidden' }}>
-          {/* Wizard Step Tabs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-light)' }}>
-            {[
-              { num: 1, title: 'Connect Gateways' },
-              { num: 2, title: 'Triple-Lock Audit' },
-              { num: 3, title: 'Claim Verified Seal' }
-            ].map(step => (
-              <div
-                key={step.num}
-                style={{
-                  padding: '1.25rem 1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  borderBottom: currentStep === step.num ? '2px solid var(--brand-primary)' : '2px solid transparent',
-                  background: currentStep === step.num ? 'var(--bg-card)' : 'transparent',
-                  color: currentStep === step.num ? 'var(--brand-primary)' : currentStep > step.num ? 'var(--success-dark)' : 'var(--text-muted)',
-                  fontWeight: 700,
-                  fontSize: '0.85rem'
-                }}
-              >
-                <span style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  background: currentStep === step.num ? 'var(--brand-primary)' : currentStep > step.num ? 'var(--success)' : 'var(--border-light)',
-                  color: currentStep >= step.num ? '#FFFFFF' : 'var(--text-secondary)'
-                }}>
-                  {currentStep > step.num ? '✓' : step.num}
-                </span>
-                <span>{step.title}</span>
+        {/* 3-Step Pipeline Visual Connector */}
+        <div className="verification-pipeline" style={{ maxWidth: '960px', margin: '0 auto 32px auto' }}>
+          {[
+            { step: 1, title: 'Connect Gateways & GSTIN', desc: 'Secure read-only API connection to Razorpay, Cashfree or Stripe.' },
+            { step: 2, title: 'AI Automated Audit', desc: 'Auto-reconciles 10,000+ invoices against filed GSTR-3B tax returns.' },
+            { step: 3, title: 'Mint Proof of Revenue', desc: 'Receive your cryptographic seal and public ledger verification URL.' }
+          ].map(item => (
+            <div 
+              key={item.step} 
+              className={`pipeline-step-card ${currentStep === item.step ? 'active-step' : ''}`}
+            >
+              <div className={`step-number-badge ${currentStep >= item.step ? 'active' : ''}`}>
+                {currentStep > item.step ? <Check size={18} /> : item.step}
               </div>
-            ))}
-          </div>
+              <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                {item.title}
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                {item.desc}
+              </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Wizard Body */}
-          <div style={{ padding: '2.5rem' }}>
-            {/* Step 1: Selection */}
+        {/* Wizard Interactive Body */}
+        <div className="glass-card-elevated" style={{ maxWidth: '960px', margin: '0 auto', overflow: 'hidden' }}>
+          
+          <div style={{ padding: '32px' }}>
+            {/* STEP 1: Connect Gateway & GSTIN */}
             {currentStep === 1 && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-                  Step 1: Choose Your Primary Payment Source
-                </h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                  We only request read-only permissions to audit settled transactions and cross-verify with GSTN.
-                </p>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: '6px' }}>Step 1: Connect Your Revenue Stack</h3>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                    Select your primary Indian payment gateway and provide your business GSTIN for cross-verification.
+                  </p>
+                </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                  <div
-                    onClick={() => setSelectedGateway('razorpay')}
-                    style={{
-                      padding: '1.25rem',
-                      borderRadius: '16px',
-                      background: selectedGateway === 'razorpay' ? 'var(--bg-card)' : 'var(--bg-subtle)',
-                      border: selectedGateway === 'razorpay' ? '2px solid var(--brand-primary)' : '1px solid var(--border-light)',
-                      boxShadow: selectedGateway === 'razorpay' ? 'var(--shadow-md)' : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#0C2340', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, marginBottom: '0.75rem' }}>
-                      <CreditCard size={20} />
+                {/* Gateway Selector Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+                  {[
+                    { id: 'razorpay', name: 'Razorpay', label: 'Primary Gateway (Recommended)' },
+                    { id: 'cashfree', name: 'Cashfree Payments', label: 'Payouts & AutoPay' },
+                    { id: 'stripe', name: 'Stripe India', label: 'Global Subscriptions' }
+                  ].map(gw => (
+                    <div
+                      key={gw.id}
+                      onClick={() => setSelectedGateway(gw.id)}
+                      style={{
+                        padding: '16px',
+                        borderRadius: '12px',
+                        border: selectedGateway === gw.id ? '2px solid var(--brand-primary)' : '1px solid var(--border-light)',
+                        background: selectedGateway === gw.id ? 'var(--brand-soft)' : 'var(--bg-subtle)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                        {gw.name}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {gw.label}
+                      </div>
                     </div>
-                    <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '4px' }}>Razorpay Subscriptions</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Read-only OAuth connection. Auto-detects active plans and refunds.</span>
+                  ))}
+                </div>
+
+                {/* Credentials Input Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                      Razorpay API Key ID (Read-Only)
+                    </label>
+                    <input
+                      type="text"
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-subtle)',
+                        border: '1px solid var(--border-light)',
+                        borderRadius: '8px',
+                        fontSize: '0.875rem',
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
                   </div>
 
-                  <div
-                    onClick={() => setSelectedGateway('phonepe')}
-                    style={{
-                      padding: '1.25rem',
-                      borderRadius: '16px',
-                      background: selectedGateway === 'phonepe' ? 'var(--bg-card)' : 'var(--bg-subtle)',
-                      border: selectedGateway === 'phonepe' ? '2px solid var(--brand-primary)' : '1px solid var(--border-light)',
-                      boxShadow: selectedGateway === 'phonepe' ? 'var(--shadow-md)' : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#5F259F', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, marginBottom: '0.75rem' }}>
-                      <Zap size={20} />
-                    </div>
-                    <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '4px' }}>PhonePe & UPI QR</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Direct merchant terminal feed for UPI AutoPay and QR settlements.</span>
-                  </div>
-
-                  <div
-                    onClick={() => setSelectedGateway('gst')}
-                    style={{
-                      padding: '1.25rem',
-                      borderRadius: '16px',
-                      background: selectedGateway === 'gst' ? 'var(--bg-card)' : 'var(--bg-subtle)',
-                      border: selectedGateway === 'gst' ? '2px solid var(--brand-primary)' : '1px solid var(--border-light)',
-                      boxShadow: selectedGateway === 'gst' ? 'var(--shadow-md)' : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#059669', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, marginBottom: '0.75rem' }}>
-                      <FileText size={20} />
-                    </div>
-                    <strong style={{ display: 'block', fontSize: '1rem', marginBottom: '4px' }}>GSTIN E-Invoice JSON</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Upload filed GSTR-1 returns or connect direct GSTN sandbox API.</span>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                      Business GSTIN (Govt. Registered)
+                    </label>
+                    <input
+                      type="text"
+                      value={gstinInput}
+                      onChange={(e) => setGstinInput(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'var(--bg-subtle)',
+                        border: '1px solid var(--border-light)',
+                        borderRadius: '8px',
+                        fontSize: '0.875rem',
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={startReconciliation} className="btn btn-primary btn-lg">
-                    <span>Run Sandbox Triple-Lock Audit</span>
-                    <ArrowRight size={18} />
-                  </button>
+                {/* Privacy Guarantee */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'var(--bg-subtle)', borderRadius: '10px', border: '1px solid var(--border-light)', marginBottom: '24px' }}>
+                  <Lock size={16} style={{ color: 'var(--success-dark)', flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                    <strong>Zero-Trust Guarantee:</strong> FounderLedger only requests read-only subscription and invoice permissions. We never store bank login passwords or customer credit card details.
+                  </span>
                 </div>
+
+                <button onClick={startReconciliation} className="btn btn-primary btn-lg" style={{ width: '100%' }}>
+                  <Zap size={18} />
+                  <span>Run Automated Triple-Lock Audit</span>
+                </button>
               </motion.div>
             )}
 
-            {/* Step 2: Live Engine Console */}
+            {/* STEP 2: Live AI Reconciliation Logs */}
             {currentStep === 2 && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <Terminal size={20} color="var(--brand-primary)" />
-                  <h3 style={{ fontSize: '1.35rem', fontWeight: 800 }}>Reconciliation Engine Running...</h3>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <h3 style={{ fontSize: '1.25rem' }}>Step 2: AI Reconciliation in Progress</h3>
+                    <span style={{ fontWeight: 700, color: 'var(--brand-primary)' }}>{progress}% Complete</span>
+                  </div>
+                  {/* Progress Bar */}
+                  <div style={{ width: '100%', height: '8px', background: 'var(--bg-muted)', borderRadius: '9999px', overflow: 'hidden' }}>
+                    <div 
+                      style={{ 
+                        width: `${progress}%`, 
+                        height: '100%', 
+                        background: 'var(--brand-primary)', 
+                        borderRadius: '9999px', 
+                        transition: 'width 0.4s ease' 
+                      }} 
+                    />
+                  </div>
                 </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                  Scrubbing test mode transactions, validating GST invoices, and hashing verified metrics.
-                </p>
 
-                {/* Progress Bar */}
-                <div style={{ width: '100%', height: '8px', background: 'var(--border-light)', borderRadius: '9999px', overflow: 'hidden', marginBottom: '1.25rem' }}>
-                  <div style={{ width: `${progress}%`, height: '100%', background: 'var(--brand-primary)', transition: 'width 0.3s ease' }} />
-                </div>
-
-                {/* Terminal Console */}
+                {/* Terminal Log Console */}
                 <div style={{
-                  background: '#090E1A',
-                  borderRadius: '16px',
-                  padding: '1.25rem',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.825rem',
+                  background: '#090D16',
                   color: '#10B981',
-                  minHeight: '180px',
-                  maxHeight: '240px',
-                  overflowY: 'auto',
+                  borderRadius: '12px',
+                  padding: '18px 20px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.8125rem',
+                  minHeight: '220px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.5rem'
+                  gap: '8px',
+                  boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.4)',
+                  border: '1px solid #1E293B'
                 }}>
-                  {logs.map((l, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '0.75rem' }}>
-                      <span style={{ color: '#64748B' }}>[+{l.time}]</span>
-                      <span>{l.text}</span>
+                  <div style={{ color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid #1E293B', paddingBottom: '8px', marginBottom: '4px' }}>
+                    <Terminal size={14} />
+                    <span>FounderLedger Triple-Lock Audit Engine v2.4 (Live Sandbox)</span>
+                  </div>
+                  {logs.map((log, index) => (
+                    <div key={index} style={{ display: 'flex', gap: '10px' }}>
+                      <span style={{ color: '#64748B' }}>[{log.time}]</span>
+                      <span style={{ color: index === logs.length - 1 ? '#FFFFFF' : '#93C5FD' }}>{log.text}</span>
                     </div>
                   ))}
                 </div>
               </motion.div>
             )}
 
-            {/* Step 3: Verified Badge Output */}
+            {/* STEP 3: Minted Seal & Embed Snippet */}
             {currentStep === 3 && (
-              <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center' }}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.35 }}
+              >
+                <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'var(--success-soft)',
+                    color: 'var(--success-dark)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px auto',
+                    border: '1px solid var(--success-border)'
+                  }}>
+                    <ShieldCheck size={36} />
+                  </div>
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '6px' }}>
+                    Triple-Lock Verification Complete!
+                  </h3>
+                  <p style={{ fontSize: '0.9375rem', color: 'var(--text-secondary)' }}>
+                    Your cryptographic revenue seal is live and indexed on the public ledger.
+                  </p>
+                </div>
+
+                {/* Badge Preview Card */}
                 <div style={{
-                  display: 'inline-flex',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '0.75rem',
-                  background: '#0F172A',
-                  color: '#FFFFFF',
-                  padding: '0.85rem 1.75rem',
-                  borderRadius: '9999px',
-                  border: '2px solid #3B82F6',
-                  boxShadow: '0 12px 30px rgba(37, 99, 235, 0.35)',
-                  marginBottom: '1.75rem'
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                  marginBottom: '24px'
                 }}>
-                  <ShieldCheck size={26} color="#10B981" strokeWidth={2.5} />
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '0.65rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>
-                      FOUNDERLEDGER AUDITED
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{
+                      padding: '10px 16px',
+                      background: '#FFFFFF',
+                      border: '1.5px solid var(--brand-primary)',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      <ShieldCheck size={22} style={{ color: 'var(--brand-primary)' }} />
+                      <div>
+                        <div style={{ fontSize: '0.6875rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          FOUNDERLEDGER VERIFIED
+                        </div>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#090E1A' }}>
+                          ₹2.22 Cr ARR
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', fontWeight: 800 }}>
-                      ₹18.5L/mo VERIFIED ARR
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
+                        Public Proof Block
+                      </div>
+                      <div style={{ fontSize: '0.8125rem', fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)' }}>
+                        #{hash}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '0.5rem' }}>
-                  Congratulations! Your Startup Revenue is Certified.
-                </h3>
-                <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', maxWidth: '560px', margin: '0 auto 1.75rem auto' }}>
-                  Your cryptographic audit hash <strong>{hash}</strong> is recorded on the Bharat Founder Ledger. Embed this badge on your site to increase buyer & investor trust.
-                </p>
-
-                {/* Embed Code Box */}
-                <div style={{ maxWidth: '640px', margin: '0 auto 1.5rem auto', textAlign: 'left' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px' }}>
-                    <span>EMBEDDABLE HTML CODE:</span>
-                    <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)' }}>{hash}</span>
-                  </div>
-                  <div style={{ position: 'relative' }}>
-                    <textarea
-                      readOnly
-                      value={embedCode}
-                      rows={3}
-                      style={{
-                        width: '100%',
-                        padding: '0.85rem',
-                        background: 'var(--bg-subtle)',
-                        border: '1px solid var(--border-light)',
-                        borderRadius: '12px',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.8rem',
-                        color: 'var(--text-primary)',
-                        resize: 'none'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                  <button onClick={handleCopy} className="btn btn-primary">
-                    {copied ? <Check size={16} /> : <Copy size={16} />}
-                    <span>{copied ? 'Copied to Clipboard!' : 'Copy Embed Code'}</span>
-                  </button>
-                  <button onClick={() => setCurrentStep(1)} className="btn btn-secondary">
-                    <RefreshCw size={16} />
-                    <span>Test Another Integration</span>
+                  <button 
+                    onClick={() => { setCurrentStep(1); setLogs([]); setProgress(0); }}
+                    className="btn btn-outline btn-sm"
+                  >
+                    <RefreshCw size={13} />
+                    <span>Run Another Sandbox Test</span>
                   </button>
                 </div>
+
+                {/* Embed Code Snippet */}
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      Embed Badge on Your Website / Footer
+                    </span>
+                    <button 
+                      onClick={handleCopy} 
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      {copied ? <Check size={13} style={{ color: 'var(--success-dark)' }} /> : <Copy size={13} />}
+                      <span>{copied ? 'Copied to Clipboard' : 'Copy HTML Snippet'}</span>
+                    </button>
+                  </div>
+                  <pre style={{
+                    background: '#090D16',
+                    color: '#93C5FD',
+                    padding: '14px',
+                    borderRadius: '8px',
+                    fontSize: '0.75rem',
+                    fontFamily: 'var(--font-mono)',
+                    overflowX: 'auto',
+                    border: '1px solid #1E293B'
+                  }}>
+                    <code>{embedCode}</code>
+                  </pre>
+                </div>
+
               </motion.div>
             )}
+
           </div>
+
         </div>
+
       </div>
     </section>
   );

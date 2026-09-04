@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 import { PLATFORM_DATA } from '../data/startups';
 
 export default function FaqSection() {
@@ -11,34 +11,25 @@ export default function FaqSection() {
   };
 
   return (
-    <section style={{ padding: '5.5rem 0', background: 'var(--bg-subtle)' }} id="faq-section">
+    <section className="section-wrapper" style={{ background: 'var(--bg-subtle)' }} id="faq-section">
       <div className="container">
+        
         {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 3.5rem auto' }}>
-          <span style={{
-            display: 'inline-block',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            color: 'var(--brand-primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            background: 'var(--brand-soft)',
-            padding: '4px 14px',
-            borderRadius: '9999px',
-            marginBottom: '0.85rem'
-          }}>
-            FREQUENTLY ASKED QUESTIONS
+        <div className="section-header">
+          <span className="badge badge-brand" style={{ marginBottom: '12px' }}>
+            <HelpCircle size={13} />
+            <span>FREQUENTLY ASKED QUESTIONS</span>
           </span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.03em' }}>
+          <h2 style={{ marginBottom: '12px' }}>
             Everything You Need to Know
           </h2>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
+          <p className="lead-text">
             Clear, honest answers about privacy, tax compliance, gateway integrations, and acquisition escrow.
           </p>
         </div>
 
         {/* Accordion List */}
-        <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {PLATFORM_DATA.faqs.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
@@ -47,23 +38,28 @@ export default function FaqSection() {
                 className="glass-card"
                 style={{
                   overflow: 'hidden',
-                  borderColor: isOpen ? 'var(--border-focus)' : 'var(--border-light)',
-                  transition: 'border-color 0.2s'
+                  padding: 0,
+                  borderColor: isOpen ? 'var(--brand-primary)' : 'var(--border-light)',
+                  background: 'var(--bg-surface)'
                 }}
               >
                 <button
                   onClick={() => toggle(i)}
                   style={{
                     width: '100%',
-                    padding: '1.25rem 1.75rem',
+                    padding: '20px 24px',
                     textAlign: 'left',
-                    fontWeight: 700,
-                    fontSize: '1.05rem',
+                    fontWeight: 600,
+                    fontSize: '1rem',
                     color: 'var(--text-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '1rem'
+                    gap: '16px',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    outline: 'none'
                   }}
                 >
                   <span>{faq.question}</span>
@@ -71,7 +67,7 @@ export default function FaqSection() {
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <ChevronDown size={18} color="var(--text-muted)" />
+                    <ChevronDown size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                   </motion.div>
                 </button>
 
@@ -81,13 +77,13 @@ export default function FaqSection() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
+                      transition={{ duration: 0.2 }}
                     >
                       <div style={{
-                        padding: '0 1.75rem 1.5rem 1.75rem',
-                        fontSize: '0.925rem',
+                        padding: '0 24px 20px 24px',
+                        fontSize: '0.9375rem',
                         color: 'var(--text-secondary)',
-                        lineHeight: 1.65
+                        lineHeight: 1.6
                       }}>
                         {faq.answer}
                       </div>
@@ -98,6 +94,7 @@ export default function FaqSection() {
             );
           })}
         </div>
+
       </div>
     </section>
   );

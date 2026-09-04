@@ -2,17 +2,26 @@ import React from 'react';
 import { CreditCard, Zap, Building2, ShieldCheck, FileCheck, CircleDollarSign } from 'lucide-react';
 
 export default function TrustMarquee() {
+  const integrations = [
+    { name: 'Razorpay Subscriptions', icon: <CreditCard size={18} style={{ color: 'var(--brand-primary)' }} /> },
+    { name: 'PhonePe Merchant UPI', icon: <Zap size={18} style={{ color: '#5F259F' }} /> },
+    { name: 'Cashfree AutoCollect', icon: <CircleDollarSign size={18} style={{ color: '#059669' }} /> },
+    { name: 'GSTN E-Invoicing API', icon: <FileCheck size={18} style={{ color: 'var(--brand-primary)' }} /> },
+    { name: 'Sahamati AA Banking', icon: <Building2 size={18} style={{ color: '#4F46E5' }} /> },
+    { name: 'ICICI Escrow Services', icon: <ShieldCheck size={18} style={{ color: 'var(--success-dark)' }} /> }
+  ];
+
   return (
-    <section style={{ padding: '2.5rem 0 3.5rem 0', borderBottom: '1px solid var(--border-light)' }}>
+    <section style={{ padding: '32px 0 48px 0', borderBottom: '1px solid var(--border-light)', background: 'var(--bg-subtle)' }}>
       <div className="container">
         <p style={{
           textAlign: 'center',
-          fontSize: '0.8rem',
+          fontSize: '0.75rem',
           fontWeight: 700,
           color: 'var(--text-muted)',
           textTransform: 'uppercase',
-          letterSpacing: '0.07em',
-          marginBottom: '1.75rem'
+          letterSpacing: '0.06em',
+          marginBottom: '24px'
         }}>
           Reconciled Directly With India's Core Fintech & Regulatory Infrastructure
         </p>
@@ -21,39 +30,30 @@ export default function TrustMarquee() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '2.5rem',
-          flexWrap: 'wrap',
-          opacity: 0.85
+          gap: '32px',
+          flexWrap: 'wrap'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-secondary)' }}>
-            <CreditCard size={20} color="var(--brand-primary)" />
-            <span>Razorpay Subscriptions</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-secondary)' }}>
-            <Zap size={20} color="#5F259F" />
-            <span>PhonePe Merchant UPI</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-secondary)' }}>
-            <CircleDollarSign size={20} color="#059669" />
-            <span>Cashfree AutoCollect</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-secondary)' }}>
-            <FileCheck size={20} color="var(--brand-primary)" />
-            <span>GSTN E-Invoicing Portal</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-secondary)' }}>
-            <Building2 size={20} color="#4F46E5" />
-            <span>Sahamati Account Aggregator</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-secondary)' }}>
-            <ShieldCheck size={20} color="var(--success)" />
-            <span>ICICI Escrow Services</span>
-          </div>
+          {integrations.map((item, idx) => (
+            <div 
+              key={idx} 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontWeight: 600, 
+                fontSize: '0.9375rem', 
+                color: 'var(--text-primary)',
+                background: 'var(--bg-surface)',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-light)',
+                boxShadow: 'var(--shadow-xs)'
+              }}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>

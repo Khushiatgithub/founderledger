@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Quote } from 'lucide-react';
+import { ShieldCheck, Quote, CheckCircle2 } from 'lucide-react';
 
 export default function TestimonialsSection() {
   const testimonials = [
@@ -8,45 +8,39 @@ export default function TestimonialsSection() {
       quote: "Listing our verified Razorpay ARR on FounderLedger eliminated 3 weeks of due diligence friction with institutional buyers. Closed our ₹8.8 Cr acquisition in record time.",
       author: "Arjun Venkatesh",
       role: "Solo Founder, DocuPulse AI (Bengaluru)",
-      avatar: "AV"
+      avatar: "AV",
+      stat: "₹8.8 Cr Deal Closed"
     },
     {
-      quote: "Our verified ledger link is in our investor deck. VCs don't even ask for raw Excel data rooms anymore. It's the gold standard for Indian fintech transparency.",
+      quote: "Our verified ledger link is in our investor deck. VCs don't even ask for raw Excel data rooms anymore. It's the gold standard for Indian SaaS transparency.",
       author: "Vikram Reddy",
       role: "CEO, VaultKit APIs (Hyderabad)",
-      avatar: "VR"
+      avatar: "VR",
+      stat: "₹4.8 Cr ARR Audited"
     },
     {
       quote: "We run completely on UPI AutoPay. FounderLedger proved every single rupee with zero manual paperwork. Having the verified badge boosted enterprise conversions by 40%.",
       author: "Ananya Mehta",
-      role: "Solo Founder, InvoiceWali (Jaipur)",
-      avatar: "AM"
+      role: "Founder, InvoiceWali (Jaipur)",
+      avatar: "AM",
+      stat: "100% Tax Match"
     }
   ];
 
   return (
-    <section style={{ padding: '5.5rem 0', background: 'var(--bg-subtle)' }}>
+    <section className="section-wrapper" style={{ background: 'var(--bg-canvas)' }}>
       <div className="container">
+        
         {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 3.5rem auto' }}>
-          <span style={{
-            display: 'inline-block',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            color: 'var(--brand-primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            background: 'var(--brand-soft)',
-            padding: '4px 14px',
-            borderRadius: '9999px',
-            marginBottom: '0.85rem'
-          }}>
-            WALL OF PROOF
+        <div className="section-header">
+          <span className="badge badge-brand" style={{ marginBottom: '12px' }}>
+            <Quote size={13} />
+            <span>WALL OF PROOF</span>
           </span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.03em' }}>
-            Built for Bharat's Most Ambitious Founders
+          <h2 style={{ marginBottom: '12px' }}>
+            Trusted by India's Top Solo Founders
           </h2>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
+          <p className="lead-text">
             See how transparent verification accelerates fundraising, builds enterprise buyer trust, and closes profitable acquisitions.
           </p>
         </div>
@@ -55,50 +49,64 @@ export default function TestimonialsSection() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '2rem'
+          gap: '24px'
         }}>
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
+              transition={{ duration: 0.35, delay: i * 0.1 }}
               className="glass-card"
               style={{
-                padding: '2rem',
+                padding: '28px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between'
+                justifyContent: 'space-between',
+                background: 'var(--bg-surface)'
               }}
             >
-              <p style={{ fontSize: '1rem', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-                "{t.quote}"
-              </p>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <span className="badge badge-verified" style={{ fontSize: '0.6875rem' }}>
+                    <CheckCircle2 size={11} />
+                    <span>{t.stat}</span>
+                  </span>
+                  <div style={{ display: 'flex', gap: '2px', color: '#F59E0B', fontSize: '0.8125rem' }}>
+                    ★★★★★
+                  </div>
+                </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                <p style={{ fontSize: '0.9375rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>
+                  "{t.quote}"
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '50%',
-                  background: 'var(--brand-gradient)',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'var(--brand-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#fff',
+                  color: '#FFFFFF',
                   fontWeight: 800,
-                  fontSize: '0.95rem'
+                  fontSize: '0.875rem'
                 }}>
                   {t.avatar}
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '2px' }}>{t.author}</h4>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t.role}</span>
+                  <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>{t.author}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.role}</div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+
       </div>
     </section>
   );

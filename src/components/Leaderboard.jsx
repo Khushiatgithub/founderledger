@@ -1,14 +1,55 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShieldCheck, ArrowRight, TrendingUp, SlidersHorizontal, Building, CheckCircle2 } from 'lucide-react';
+import { 
+  Search, 
+  ShieldCheck, 
+  ArrowRight, 
+  TrendingUp, 
+  SlidersHorizontal, 
+  Building2, 
+  CheckCircle2, 
+  Sparkles,
+  ExternalLink,
+  ChevronRight,
+  Filter,
+  BadgeCheck
+} from 'lucide-react';
 import { PLATFORM_DATA } from '../data/startups';
 import { formatCurrency } from '../utils/formatters';
+
+// Helper component to render mini SVG sparkline
+function Sparkline({ data = [] }) {
+  if (!data || data.length < 2) return null;
+  const revenues = data.map(d => d.revenue);
+  const min = Math.min(...revenues) * 0.9;
+  const max = Math.max(...revenues) * 1.1;
+  const width = 100;
+  const height = 32;
+
+  const points = revenues.map((val, idx) => {
+    const x = (idx / (revenues.length - 1)) * width;
+    const y = height - ((val - min) / (max - min)) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+      <polyline
+        fill="none"
+        stroke="#2563EB"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
+}
 
 export default function Leaderboard({ currency, onSelectStartup }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dealFilter, setDealFilter] = useState('all');
-  const [mrrFilter, setMrrFilter] = useState('all');
   const [sortBy, setSortBy] = useState('arr_desc');
 
   const filteredStartups = useMemo(() => {
@@ -24,21 +65,13 @@ export default function Leaderboard({ currency, onSelectStartup }) {
         s.name.toLowerCase().includes(q) ||
         s.tagline.toLowerCase().includes(q) ||
         s.location.toLowerCase().includes(q) ||
-        s.founder.name.toLowerCase().includes(q) ||
-        s.techStack.some(t => t.toLowerCase().includes(q))
+        s.founder?.name?.toLowerCase().includes(q) ||
+        (s.techStack && s.techStack.some(t => t.toLowerCase().includes(q)))
       );
     }
 
     if (dealFilter !== 'all') {
       list = list.filter(s => s.dealStatus === dealFilter);
-    }
-
-    if (mrrFilter === 'under_10l') {
-      list = list.filter(s => s.mrr < 1000000);
-    } else if (mrrFilter === '10l_25l') {
-      list = list.filter(s => s.mrr >= 1000000 && s.mrr <= 2500000);
-    } else if (mrrFilter === 'above_25l') {
-      list = list.filter(s => s.mrr > 2500000);
     }
 
     if (sortBy === 'arr_desc') list.sort((a, b) => b.arr - a.arr);
@@ -47,267 +80,245 @@ export default function Leaderboard({ currency, onSelectStartup }) {
     else if (sortBy === 'margin_desc') list.sort((a, b) => b.netMargin - a.netMargin);
 
     return list;
-  }, [activeCategory, searchQuery, dealFilter, mrrFilter, sortBy]);
+  }, [activeCategory, searchQuery, dealFilter, sortBy]);
 
   return (
-    <section style={{ padding: '5.5rem 0' }} id="leaderboard-section">
+    <section className="section-wrapper" id="leaderboard-section">
       <div className="container">
+        
         {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 3rem auto' }}>
-          <span style={{
-            display: 'inline-block',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            color: 'var(--brand-primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            background: 'var(--brand-soft)',
-            padding: '4px 14px',
-            borderRadius: '9999px',
-            marginBottom: '0.85rem'
-          }}>
-            LIVE VERIFIED DIRECTORY
+        <div className="section-header">
+          <span className="badge badge-brand" style={{ marginBottom: '12px' }}>
+            <BadgeCheck size={13} />
+            <span>LIVE AUDITED DIRECTORY</span>
           </span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.03em' }}>
-            Discover India's Most Transparent Startups
+          <h2 style={{ marginBottom: '12px' }}>
+            India's Most Transparent Startup Leaderboard
           </h2>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
-            Every single rupee verified through read-only API connections and filed GST returns. Zero vanity pitch deck numbers.
+          <p className="lead-text">
+            Every rupee verified through automated read-only gateway API tunnels and filed GSTR-3B tax receipts. Zero pitch deck puffery.
           </p>
         </div>
 
-        {/* Directory Controls Bar */}
-        <div className="glass-card" style={{ padding: '1.25rem', marginBottom: '2rem' }}>
-          {/* Row 1: Search & Category Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        {/* Directory Search & Filter Controls */}
+        <div className="glass-card" style={{ padding: '16px', marginBottom: '24px', background: 'var(--bg-surface)' }}>
+          {/* Row 1: Search & Sort */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
             <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
-              <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search startup name, keywords, founders, tech stack..."
+                placeholder="Search by company, tech stack, founder, or location..."
                 style={{
                   width: '100%',
-                  padding: '0.65rem 1rem 0.65rem 2.6rem',
+                  padding: '10px 14px 10px 40px',
                   background: 'var(--bg-subtle)',
                   border: '1px solid var(--border-light)',
-                  borderRadius: '12px',
-                  fontSize: '0.9rem',
-                  color: 'var(--text-primary)'
+                  borderRadius: '10px',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-body)',
+                  outline: 'none'
                 }}
               />
             </div>
 
-            {/* Category Pills */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflowX: 'auto', paddingBottom: '4px' }}>
-              {PLATFORM_DATA.categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  style={{
-                    position: 'relative',
-                    padding: '6px 14px',
-                    borderRadius: '9999px',
-                    fontSize: '0.825rem',
-                    fontWeight: 600,
-                    color: activeCategory === cat.id ? '#FFFFFF' : 'var(--text-secondary)',
-                    background: activeCategory === cat.id ? 'var(--brand-primary)' : 'var(--bg-subtle)',
-                    border: '1px solid var(--border-light)',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.2s',
-                    boxShadow: activeCategory === cat.id ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none'
-                  }}
-                >
-                  {cat.label} ({cat.count})
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Row 2: Secondary Filters */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-            fontSize: '0.85rem',
-            color: 'var(--text-secondary)',
-            borderTop: '1px solid var(--border-subtle)',
-            paddingTop: '0.85rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <SlidersHorizontal size={14} />
-                <span>Deal Status:</span>
-              </label>
-              <select
-                value={dealFilter}
-                onChange={(e) => setDealFilter(e.target.value)}
-                style={{ padding: '5px 10px', borderRadius: '8px', background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-              >
-                <option value="all">All Statuses</option>
-                <option value="open_acquisition">Open for Acquisition</option>
-                <option value="fundraising">Fundraising Series A/Seed</option>
-                <option value="not_for_sale">Verified Proof Only</option>
-              </select>
-
-              <label style={{ marginLeft: '0.5rem' }}>Monthly Revenue:</label>
-              <select
-                value={mrrFilter}
-                onChange={(e) => setMrrFilter(e.target.value)}
-                style={{ padding: '5px 10px', borderRadius: '8px', background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
-              >
-                <option value="all">All MRR Tiers</option>
-                <option value="under_10l">Under ₹10 Lakhs/mo</option>
-                <option value="10l_25l">₹10L – ₹25 Lakhs/mo</option>
-                <option value="above_25l">₹25 Lakhs+/mo</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
-                Showing {filteredStartups.length} verified startup{filteredStartups.length === 1 ? '' : 's'}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                style={{ padding: '5px 10px', borderRadius: '8px', background: 'var(--bg-subtle)', border: '1px solid var(--border-light)', color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600 }}
+                style={{
+                  padding: '10px 14px',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-body)',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
               >
-                <option value="arr_desc">Highest ARR First</option>
+                <option value="arr_desc">Highest Verified ARR</option>
+                <option value="growth_desc">Highest Growth Rate (%)</option>
+                <option value="margin_desc">Highest Profit Margin</option>
                 <option value="arr_asc">Lowest ARR First</option>
-                <option value="growth_desc">Highest MoM Growth</option>
-                <option value="margin_desc">Highest Net Margin</option>
+              </select>
+
+              <select
+                value={dealFilter}
+                onChange={(e) => setDealFilter(e.target.value)}
+                style={{
+                  padding: '10px 14px',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-light)',
+                  borderRadius: '10px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-body)',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="all">All Deals</option>
+                <option value="open_acquisition">Acquisition Listings</option>
+                <option value="not_for_sale">Verified Proofs Only</option>
               </select>
             </div>
           </div>
+
+          {/* Row 2: Category Filter Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {PLATFORM_DATA.categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`btn btn-sm ${activeCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ fontSize: '0.8125rem', padding: '6px 14px', borderRadius: '8px' }}
+              >
+                <span>{cat.label}</span>
+                <span style={{ 
+                  fontSize: '0.7rem', 
+                  opacity: activeCategory === cat.id ? 0.9 : 0.6,
+                  marginLeft: '4px'
+                }}>
+                  ({cat.count})
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Startups 20px Rounded Cards Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-          gap: '1.5rem'
-        }}>
-          {filteredStartups.map((s, index) => {
-            const isAcquisition = s.dealStatus === 'open_acquisition';
-            const isFundraising = s.dealStatus === 'fundraising';
+        {/* ==========================================================================
+            Leaderboard Table Grid
+            ========================================================================== */}
+        <div className="leaderboard-table-container">
+          
+          {/* Table Header Row */}
+          <div className="leaderboard-row leaderboard-header-row">
+            <div>#</div>
+            <div>STARTUP / DOMAIN</div>
+            <div>VERIFIED MRR</div>
+            <div className="hide-on-tablet">YOY GROWTH</div>
+            <div className="hide-on-tablet">REVENUE TREND</div>
+            <div className="hide-on-mobile">VALUATION</div>
+            <div style={{ textAlign: 'right' }}>ACTION</div>
+          </div>
 
-            return (
+          {/* Startups Rows */}
+          {filteredStartups.length > 0 ? (
+            filteredStartups.map((startup, idx) => (
               <motion.div
-                key={s.id}
-                layout
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.04 }}
-                onClick={() => onSelectStartup(s)}
-                className="glass-card"
-                style={{
-                  padding: '1.65rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}
+                key={startup.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: idx * 0.03 }}
+                onClick={() => onSelectStartup(startup)}
+                className="leaderboard-row"
               >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '12px',
-                        background: 'var(--brand-gradient)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#fff',
-                        fontWeight: 800,
-                        fontSize: '1rem',
-                        flexShrink: 0
-                      }}>
-                        {s.founder.avatar}
-                      </div>
-                      <div>
-                        <h3 style={{ fontSize: '1.15rem', marginBottom: '2px' }}>{s.name}</h3>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {s.categoryLabel} • {s.location}
-                        </div>
-                      </div>
-                    </div>
+                {/* Rank */}
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: idx < 3 ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
+                  #{idx + 1}
+                </div>
 
-                    <span className={isAcquisition ? 'badge-deal-open' : isFundraising ? 'badge-deal-fundraising' : 'badge-gold'} style={{ padding: '3px 9px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700 }}>
-                      {s.dealLabel}
-                    </span>
-                  </div>
-
-                  <p style={{
-                    fontSize: '0.875rem',
-                    color: 'var(--text-secondary)',
-                    lineHeight: 1.5,
-                    marginBottom: '1.25rem',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}>
-                    {s.tagline}
-                  </p>
-
+                {/* Company Avatar & Details */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '0.75rem',
-                    padding: '0.85rem',
-                    background: 'var(--bg-subtle)',
-                    borderRadius: '14px',
-                    marginBottom: '1rem'
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 800,
+                    fontSize: '0.875rem',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 6px rgba(37, 99, 235, 0.2)'
                   }}>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600, color: 'var(--text-muted)' }}>Verified ARR</div>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--brand-primary)' }}>{formatCurrency(s.arr, currency)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600, color: 'var(--text-muted)' }}>MoM Growth</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--success-dark)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <TrendingUp size={14} /> +{s.growthMoM}%
-                      </div>
-                    </div>
+                    {startup.name.slice(0, 2).toUpperCase()}
                   </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1.25rem', fontSize: '0.8rem' }}>
-                    <div>
-                      <span style={{ color: 'var(--text-muted)' }}>MRR Run-rate: </span>
-                      <strong style={{ fontFamily: 'var(--font-mono)' }}>{formatCurrency(s.mrr, currency, true)}</strong>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
+                        {startup.name}
+                      </span>
+                      <span className="badge badge-verified" style={{ fontSize: '0.625rem', padding: '2px 6px' }}>
+                        <ShieldCheck size={10} />
+                        <span>Razorpay</span>
+                      </span>
                     </div>
-                    <div>
-                      <span style={{ color: 'var(--text-muted)' }}>Net Margin: </span>
-                      <strong style={{ color: 'var(--success-dark)' }}>{s.netMargin}%</strong>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
+                      {startup.tagline}
                     </div>
                   </div>
                 </div>
 
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: '0.85rem',
-                  borderTop: '1px solid var(--border-subtle)',
-                  fontSize: '0.775rem'
-                }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <ShieldCheck size={14} color="var(--success)" />
-                    {s.ledgerHash}
-                  </span>
-                  <span style={{ fontWeight: 700, color: 'var(--brand-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                    Audit Data Room <ArrowRight size={13} />
-                  </span>
+                {/* Verified MRR / ARR */}
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
+                    {formatCurrency(startup.mrr, currency)}
+                    <span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-muted)' }}>/mo</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    ARR: {formatCurrency(startup.arr, currency)}
+                  </div>
+                </div>
+
+                {/* YoY Growth */}
+                <div className="hide-on-tablet">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-dark)' }}>
+                    <TrendingUp size={14} />
+                    <span>+{startup.growthMoM}%</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Margin: {startup.netMargin}%
+                  </div>
+                </div>
+
+                {/* 12-Month Sparkline Curve */}
+                <div className="hide-on-tablet">
+                  <Sparkline data={startup.monthlyHistory} />
+                </div>
+
+                {/* Valuation / Multiple */}
+                <div className="hide-on-mobile">
+                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                    {startup.askingPrice ? formatCurrency(startup.askingPrice, currency) : formatCurrency(startup.arr * 4.2, currency)}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
+                    {startup.multiple || '4.2x Multiple'}
+                  </div>
+                </div>
+
+                {/* Action CTA */}
+                <div style={{ textAlign: 'right' }}>
+                  <button className="btn btn-secondary btn-sm" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>
+                    <span>Audit Ledger</span>
+                    <ChevronRight size={13} />
+                  </button>
                 </div>
               </motion.div>
-            );
-          })}
+            ))
+          ) : (
+            <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              No verified startups found matching your filter criteria.
+            </div>
+          )}
+
         </div>
+
+        {/* Leaderboard Footer Trust Stamp */}
+        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '8px' }}>
+          <div>Showing <strong>{filteredStartups.length}</strong> audited Indian startups</div>
+          <div>Last GST Reconciliation Sync: <strong>March 2026 Batch #842</strong></div>
+        </div>
+
       </div>
     </section>
   );
