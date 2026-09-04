@@ -13,6 +13,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
+          clerk: ['@clerk/clerk-react'],
+          router: ['react-router-dom'],
           charts: ['recharts'],
           motion: ['framer-motion'],
           icons: ['lucide-react']

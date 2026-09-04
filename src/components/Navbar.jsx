@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Search, Moon, Sun, Menu, X, ArrowRight, Zap, Command } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { ShieldCheck, Search, Moon, Sun, Menu, X, ArrowRight, Zap, LayoutDashboard, User } from 'lucide-react';
 
 export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenCmd, onOpenVerify }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,7 +12,7 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
         
         {/* Brand Logo */}
-        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }} aria-label="FounderLedger Home">
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }} aria-label="FounderLedger Home">
           <div style={{
             width: '36px',
             height: '36px',
@@ -41,15 +43,21 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
               BHARAT
             </span>
           </div>
-        </a>
+        </Link>
 
         {/* Desktop Nav Links */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="hide-on-tablet">
-          <a href="#leaderboard-section" className="nav-link">Leaderboard</a>
-          <a href="#verify-section" className="nav-link">Verification</a>
-          <a href="#marketplace-section" className="nav-link">M&A Deals</a>
-          <a href="#valuation-section" className="nav-link">Valuation</a>
-          <a href="#pricing-section" className="nav-link">Pricing</a>
+          <a href="/#leaderboard-section" className="nav-link">Leaderboard</a>
+          <a href="/#verify-section" className="nav-link">Verification</a>
+          <a href="/#marketplace-section" className="nav-link">M&A Deals</a>
+          <a href="/#valuation-section" className="nav-link">Valuation</a>
+          <a href="/#pricing-section" className="nav-link">Pricing</a>
+          <SignedIn>
+            <Link to="/dashboard" className="nav-link" style={{ color: 'var(--brand-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <LayoutDashboard size={14} />
+              <span>Dashboard</span>
+            </Link>
+          </SignedIn>
         </nav>
 
         {/* Nav Right Controls */}
@@ -149,11 +157,25 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          {/* Primary CTA Button */}
-          <button onClick={onOpenVerify} className="btn btn-primary btn-sm hide-on-mobile">
-            <Zap size={14} />
-            <span>Verify ARR</span>
-          </button>
+          {/* Authentication Actions */}
+          <SignedOut>
+            <Link to="/sign-in" className="btn btn-secondary btn-sm hide-on-mobile">
+              <span>Sign In</span>
+            </Link>
+            <Link to="/sign-up" className="btn btn-primary btn-sm hide-on-mobile">
+              <Zap size={14} />
+              <span>Verify ARR</span>
+            </Link>
+          </SignedOut>
+
+          <SignedIn>
+            <Link to="/dashboard" className="btn btn-secondary btn-sm hide-on-mobile" style={{ gap: '6px' }}>
+              <LayoutDashboard size={14} />
+              <span>Console</span>
+            </Link>
+            {/* Clerk Profile Dropdown */}
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
 
           {/* Mobile Menu Hamburger */}
           <button
@@ -199,15 +221,28 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
               boxShadow: 'var(--shadow-lg)'
             }}
           >
-            <a href="#leaderboard-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Leaderboard</a>
-            <a href="#verify-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Verification</a>
-            <a href="#marketplace-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">M&A Deals</a>
-            <a href="#valuation-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Valuation</a>
-            <a href="#pricing-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Pricing</a>
-            <button onClick={() => { setMobileMenuOpen(false); onOpenVerify(); }} className="btn btn-primary" style={{ width: '100%', marginTop: '8px' }}>
-              <ShieldCheck size={16} />
-              <span>Verify My Startup</span>
-            </button>
+            <a href="/#leaderboard-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Leaderboard</a>
+            <a href="/#verify-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Verification</a>
+            <a href="/#marketplace-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">M&A Deals</a>
+            <a href="/#valuation-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Valuation</a>
+            <a href="/#pricing-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Pricing</a>
+            
+            <SignedIn>
+              <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ width: '100%' }}>
+                <LayoutDashboard size={16} />
+                <span>Founder Console</span>
+              </Link>
+            </SignedIn>
+
+            <SignedOut>
+              <Link to="/sign-in" onClick={() => setMobileMenuOpen(false)} className="btn btn-secondary" style={{ width: '100%' }}>
+                <span>Sign In</span>
+              </Link>
+              <Link to="/sign-up" onClick={() => setMobileMenuOpen(false)} className="btn btn-primary" style={{ width: '100%' }}>
+                <ShieldCheck size={16} />
+                <span>Verify My Startup</span>
+              </Link>
+            </SignedOut>
           </motion.div>
         )}
       </AnimatePresence>

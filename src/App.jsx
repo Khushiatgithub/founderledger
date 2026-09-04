@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import LiveTicker from './components/LiveTicker';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
@@ -18,29 +19,20 @@ import DealRoomModal from './components/Modals/DealRoomModal';
 import CommandPalette from './components/Modals/CommandPalette';
 import Toasts from './components/Toasts';
 
-export default function App() {
-  const [currency, setCurrency] = useState('INR');
-  const [theme, setTheme] = useState(() => localStorage.getItem('fl_theme') || 'light');
-  const [selectedStartup, setSelectedStartup] = useState(null);
-  const [selectedDeal, setSelectedDeal] = useState(null);
-  const [isCmdOpen, setIsCmdOpen] = useState(false);
+// Pages
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
+import DashboardPage from './pages/DashboardPage';
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('fl_theme', theme);
-  }, [theme]);
-
+// Landing Page Sub-Component
+function LandingPage({ currency, setCurrency, theme, setTheme, onSelectStartup, onOpenDealRoom, onOpenCmd }) {
   const handleOpenVerify = () => {
     const el = document.getElementById('verify-section');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh' }}>
-      {/* Background Grids & Ambient Lighting */}
-      <div className="bg-grid-ambient" aria-hidden="true" />
-      <div className="ambient-blue-glow" aria-hidden="true" />
-
+    <>
       {/* Live Activity Ticker */}
       <LiveTicker />
 
@@ -50,7 +42,7 @@ export default function App() {
         setCurrency={setCurrency}
         theme={theme}
         setTheme={setTheme}
-        onOpenCmd={() => setIsCmdOpen(true)}
+        onOpenCmd={onOpenCmd}
         onOpenVerify={handleOpenVerify}
       />
 
@@ -58,7 +50,7 @@ export default function App() {
       <main>
         <HeroSection
           currency={currency}
-          onSelectStartup={(s) => setSelectedStartup(s)}
+          onSelectStartup={onSelectStartup}
           onOpenVerify={handleOpenVerify}
         />
 
@@ -71,7 +63,7 @@ export default function App() {
         {/* Verified Startup Leaderboard Directory */}
         <Leaderboard
           currency={currency}
-          onSelectStartup={(s) => setSelectedStartup(s)}
+          onSelectStartup={onSelectStartup}
         />
 
         {/* Interactive 3-Step Verification Simulator */}
@@ -80,7 +72,7 @@ export default function App() {
         {/* Micro-Acquisition Marketplace */}
         <MarketplaceSection
           currency={currency}
-          onOpenDealRoom={(deal) => setSelectedDeal(deal)}
+          onOpenDealRoom={onOpenDealRoom}
         />
 
         {/* Startup Valuation Calculator */}
@@ -104,6 +96,48 @@ export default function App() {
 
       {/* Footer */}
       <Footer />
+    </>
+  );
+}
+
+export default function App() {
+  const [currency, setCurrency] = useState('INR');
+  const [theme, setTheme] = useState(() => localStorage.getItem('fl_theme') || 'light');
+  const [selectedStartup, setSelectedStartup] = useState(null);
+  const [selectedDeal, setSelectedDeal] = useState(null);
+  const [isCmdOpen, setIsCmdOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('fl_theme', theme);
+  }, [theme]);
+
+  return (
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
+      {/* Background Grids & Ambient Lighting */}
+      <div className="bg-grid-ambient" aria-hidden="true" />
+      <div className="ambient-blue-glow" aria-hidden="true" />
+
+      {/* React Router Routes */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <LandingPage
+              currency={currency}
+              setCurrency={setCurrency}
+              theme={theme}
+              setTheme={setTheme}
+              onSelectStartup={(s) => setSelectedStartup(s)}
+              onOpenDealRoom={(d) => setSelectedDeal(d)}
+              onOpenCmd={() => setIsCmdOpen(true)}
+            />
+          }
+        />
+        <Route path="/sign-in/*" element={<SignInPage />} />
+        <Route path="/sign-up/*" element={<SignUpPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+      </Routes>
 
       {/* Startup Financial Audit Drawer / Modal */}
       <StartupModal
