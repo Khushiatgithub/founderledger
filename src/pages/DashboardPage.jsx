@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useUser, UserButton, RedirectToSignIn } from '@clerk/clerk-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ResponsiveContainer,
@@ -58,9 +58,11 @@ import {
 import { formatCurrency } from '../utils/formatters';
 import { useCountUp } from '../utils/useCountUp';
 import { useSupabaseData } from '../hooks/useSupabaseData';
+import AddStartupModal from '../components/Modals/AddStartupModal';
 
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'analytics', 'gateways', 'tax', 'deals'
   const [currency, setCurrency] = useState('INR');
@@ -71,6 +73,7 @@ export default function DashboardPage() {
   const [copiedKey, setCopiedKey] = useState(false);
   const [dataRoomActive, setDataRoomActive] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAddStartupModal, setShowAddStartupModal] = useState(false);
   const [showAddTxnModal, setShowAddTxnModal] = useState(false);
   const [newTxnCompany, setNewTxnCompany] = useState('');
   const [newTxnAmount, setNewTxnAmount] = useState('');
@@ -497,7 +500,15 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setShowAddStartupModal(true)}
+                className="btn btn-primary btn-sm"
+                style={{ gap: '6px' }}
+              >
+                <Plus size={14} />
+                <span>Add Startup</span>
+              </button>
               <button
                 onClick={() => refetch()}
                 disabled={refreshing}
@@ -510,9 +521,9 @@ export default function DashboardPage() {
               </button>
               <button onClick={() => setShowAddTxnModal(true)} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
                 <Plus size={14} />
-                <span>Record Inward Settlement</span>
+                <span>Record Settlement</span>
               </button>
-              <button onClick={() => setActiveTab('deals')} className="btn btn-primary btn-sm" style={{ gap: '6px' }}>
+              <button onClick={() => setActiveTab('deals')} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
                 <Lock size={14} />
                 <span>NDA Deal Room</span>
               </button>
@@ -1091,6 +1102,18 @@ export default function DashboardPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Add New Startup Modal */}
+      <AddStartupModal
+        isOpen={showAddStartupModal}
+        onClose={() => setShowAddStartupModal(false)}
+        onSuccess={(newStartup) => {
+          setShowAddStartupModal(false);
+          refetch();
+          navigate(`/startup/${newStartup.slug}`);
+        }}
+        userId={user?.id}
+      />
     </div>
   );
 }
