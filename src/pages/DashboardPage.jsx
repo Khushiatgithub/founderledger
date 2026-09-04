@@ -815,58 +815,89 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map(t => (
-                    <tr key={t.id} style={{ borderBottom: '1px solid var(--border-subtle)', transition: 'background 0.15s' }}>
-                      {/* Company Name with Initial Badge */}
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {filteredTransactions.length > 0 ? (
+                    filteredTransactions.map(t => (
+                      <tr key={t.id} style={{ borderBottom: '1px solid var(--border-subtle)', transition: 'background 0.15s' }}>
+                        {/* Company Name with Initial Badge */}
+                        <td style={{ padding: '12px 16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '6px',
+                              background: 'var(--brand-primary)',
+                              color: '#FFFFFF',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: '0.6875rem'
+                            }}>
+                              {t.logo || (t.company ? t.company.substring(0, 2).toUpperCase() : 'FL')}
+                            </div>
+                            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.company}</span>
+                          </div>
+                        </td>
+
+                        {/* Amount */}
+                        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                          +{formatCurrency(t.amount, currency)}
+                        </td>
+
+                        {/* Status */}
+                        <td style={{ padding: '12px 16px' }}>
+                          <span className="badge badge-verified" style={{ fontSize: '0.6875rem' }}>
+                            <CheckCircle2 size={10} />
+                            <span>{t.status || 'Settled'}</span>
+                          </span>
+                        </td>
+
+                        {/* Source */}
+                        <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
+                          {t.source}
+                        </td>
+
+                        {/* Date */}
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                          {t.date}
+                        </td>
+
+                        {/* Invoice Link */}
+                        <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)', fontWeight: 600 }}>
+                          {t.invoice}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '48px 16px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                           <div style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '6px',
-                            background: 'var(--brand-primary)',
-                            color: '#FFFFFF',
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '12px',
+                            background: 'var(--bg-subtle)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontWeight: 700,
-                            fontSize: '0.6875rem'
+                            color: 'var(--text-muted)'
                           }}>
-                            {t.logo || (t.company ? t.company.substring(0, 2).toUpperCase() : 'FL')}
+                            <FileCheck2 size={22} strokeWidth={1.75} />
                           </div>
-                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.company}</span>
+                          <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9375rem' }}>No settlement records found</div>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem', maxWidth: '360px', margin: '0 auto 8px auto', lineHeight: 1.4 }}>
+                            {searchTxn || filterSource !== 'all' 
+                              ? 'No transactions matched your search or gateway filter criteria.'
+                              : 'No incoming transactions logged for this startup yet. Record your first settlement or sync from payment gateways.'}
+                          </p>
+                          <button onClick={() => setShowAddTxnModal(true)} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
+                            <Plus size={14} />
+                            <span>Record Settlement</span>
+                          </button>
                         </div>
                       </td>
-
-                      {/* Amount */}
-                      <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                        +{formatCurrency(t.amount, currency)}
-                      </td>
-
-                      {/* Status */}
-                      <td style={{ padding: '12px 16px' }}>
-                        <span className="badge badge-verified" style={{ fontSize: '0.6875rem' }}>
-                          <CheckCircle2 size={10} />
-                          <span>{t.status || 'Settled'}</span>
-                        </span>
-                      </td>
-
-                      {/* Source */}
-                      <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
-                        {t.source}
-                      </td>
-
-                      {/* Date */}
-                      <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                        {t.date}
-                      </td>
-
-                      {/* Invoice Link */}
-                      <td style={{ padding: '12px 16px', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)', fontWeight: 600 }}>
-                        {t.invoice}
-                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1112,7 +1143,7 @@ export default function DashboardPage() {
           refetch();
           navigate(`/startup/${newStartup.slug}`);
         }}
-        userId={user?.id}
+        userId={user}
       />
     </div>
   );

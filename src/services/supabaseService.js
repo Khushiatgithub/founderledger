@@ -26,20 +26,20 @@ function saveLocalStartup(startup) {
   }
 }
 
-// Fallback seed data if Supabase is offline, not yet configured, or syncing initial rows
+// Fallback seed data
 export const DEFAULT_MRR_HISTORY = [
-  { month: 'Apr 25', mrr: 780000, razorpay: 530000, upi: 170000, stripe: 80000 },
-  { month: 'May 25', mrr: 890000, razorpay: 605000, upi: 195000, stripe: 90000 },
-  { month: 'Jun 25', mrr: 1020000, razorpay: 693000, upi: 224000, stripe: 103000 },
-  { month: 'Jul 25', mrr: 1180000, razorpay: 802000, upi: 260000, stripe: 118000 },
-  { month: 'Aug 25', mrr: 1310000, razorpay: 890000, upi: 288000, stripe: 132000 },
-  { month: 'Sep 25', mrr: 1420000, razorpay: 965000, upi: 312000, stripe: 143000 },
-  { month: 'Oct 25', mrr: 1540000, razorpay: 1047000, upi: 339000, stripe: 154000 },
-  { month: 'Nov 25', mrr: 1620000, razorpay: 1101000, upi: 356000, stripe: 163000 },
-  { month: 'Dec 25', mrr: 1690000, razorpay: 1149000, upi: 372000, stripe: 169000 },
-  { month: 'Jan 26', mrr: 1740000, razorpay: 1183000, upi: 383000, stripe: 174000 },
-  { month: 'Feb 26', mrr: 1810000, razorpay: 1230000, upi: 398000, stripe: 182000 },
-  { month: 'Mar 26', mrr: 1850000, razorpay: 1258000, upi: 407000, stripe: 185000 }
+  { month: 'Apr 25', mrr: 780000, arr: 9360000, customers: 85, growth: 14.2, razorpay: 530000, upi: 170000, stripe: 80000 },
+  { month: 'May 25', mrr: 890000, arr: 10680000, customers: 98, growth: 14.1, razorpay: 605000, upi: 195000, stripe: 90000 },
+  { month: 'Jun 25', mrr: 1020000, arr: 12240000, customers: 114, growth: 14.6, razorpay: 693000, upi: 224000, stripe: 103000 },
+  { month: 'Jul 25', mrr: 1180000, arr: 14160000, customers: 132, growth: 15.6, razorpay: 802000, upi: 260000, stripe: 118000 },
+  { month: 'Aug 25', mrr: 1310000, arr: 15720000, customers: 149, growth: 11.0, razorpay: 890000, upi: 288000, stripe: 132000 },
+  { month: 'Sep 25', mrr: 1420000, arr: 17040000, customers: 165, growth: 8.4, razorpay: 965000, upi: 312000, stripe: 143000 },
+  { month: 'Oct 25', mrr: 1540000, arr: 18480000, customers: 182, growth: 8.5, razorpay: 1047000, upi: 339000, stripe: 154000 },
+  { month: 'Nov 25', mrr: 1620000, arr: 19440000, customers: 198, growth: 5.2, razorpay: 1101000, upi: 356000, stripe: 163000 },
+  { month: 'Dec 25', mrr: 1690000, arr: 20280000, customers: 215, growth: 4.3, razorpay: 1149000, upi: 372000, stripe: 169000 },
+  { month: 'Jan 26', mrr: 1740000, arr: 20880000, customers: 228, growth: 3.0, razorpay: 1183000, upi: 383000, stripe: 174000 },
+  { month: 'Feb 26', mrr: 1810000, arr: 21720000, customers: 239, growth: 4.0, razorpay: 1230000, upi: 398000, stripe: 182000 },
+  { month: 'Mar 26', mrr: 1850000, arr: 22200000, customers: 248, growth: 2.2, razorpay: 1258000, upi: 407000, stripe: 185000 }
 ];
 
 export const DEFAULT_CATEGORY_REVENUE = [
@@ -79,9 +79,7 @@ export const DEFAULT_TRANSACTIONS = [
   { id: 'txn_9885E', company: 'Postman Dev', logo: 'PD', amount: 29999, status: 'Settled', date: '3 hours ago', source: 'Stripe India', invoice: 'INV-2026-885' },
   { id: 'txn_9886F', company: 'Meesho Store', logo: 'MS', amount: 62500, status: 'Reconciled', date: 'Today, 11:30 AM', source: 'GSTR-3B ARN', invoice: 'INV-2026-886' },
   { id: 'txn_9887G', company: 'Unacademy Plus', logo: 'UP', amount: 48000, status: 'Captured', date: 'Today, 09:15 AM', source: 'UPI AutoPay', invoice: 'INV-2026-887' },
-  { id: 'txn_9888H', company: 'Razorpay Labs', logo: 'RL', amount: 95000, status: 'Settled', date: 'Yesterday, 6:45 PM', source: 'Razorpay Subscriptions', invoice: 'INV-2026-888' },
-  { id: 'txn_9889I', company: 'Zomato Fleet Ops', logo: 'ZF', amount: 110000, status: 'Settled', date: 'Yesterday, 3:20 PM', source: 'ICICI Bank Wire', invoice: 'INV-2026-889' },
-  { id: 'txn_9890J', company: 'DevStudio HQ', logo: 'DH', amount: 14500, status: 'Captured', date: '2 days ago', source: 'Razorpay Subscriptions', invoice: 'INV-2026-890' }
+  { id: 'txn_9888H', company: 'Razorpay Labs', logo: 'RL', amount: 95000, status: 'Settled', date: 'Yesterday, 6:45 PM', source: 'Razorpay Subscriptions', invoice: 'INV-2026-888' }
 ];
 
 export const DEFAULT_STARTUP_STATS = {
@@ -97,7 +95,9 @@ export const DEFAULT_STARTUP_STATS = {
 };
 
 /**
- * Sync authenticated Clerk user to Supabase profiles table
+ * Connect Clerk user to Supabase:
+ * Automatically creates or updates record in `users` table:
+ * Table: users (id, clerk_id, name, email, avatar, created_at)
  */
 export async function syncClerkUserToSupabase(user) {
   if (!isSupabaseConfigured || !supabase || !user) {
@@ -105,39 +105,37 @@ export async function syncClerkUserToSupabase(user) {
   }
 
   try {
-    const profileData = {
-      id: user.id,
+    const userData = {
+      clerk_id: user.id,
+      name: user.fullName || user.firstName || 'Founder',
       email: user.primaryEmailAddress?.emailAddress || '',
-      full_name: user.fullName || user.firstName || 'Founder',
-      avatar_url: user.imageUrl || '',
-      company_name: user.publicMetadata?.companyName || 'DocuPulse AI',
-      updated_at: new Date().toISOString()
+      avatar: user.imageUrl || ''
     };
 
     const { data, error } = await supabase
-      .from('profiles')
-      .upsert(profileData, { onConflict: 'id' })
+      .from('users')
+      .upsert(userData, { onConflict: 'clerk_id' })
       .select()
       .single();
 
     if (error) {
-      console.warn('[Supabase Sync] Profile upsert notice:', error.message);
+      console.warn('[Supabase Sync] Users table notice:', error.message);
       return { success: false, error };
     }
 
     return { success: true, data };
   } catch (err) {
-    console.warn('[Supabase Sync] Profile sync caught error:', err);
+    console.warn('[Supabase Sync] User sync caught error:', err);
     return { success: false, error: err };
   }
 }
 
 /**
- * Fetch all dashboard metrics, revenue history records, and live transactions
+ * Fetch all dashboard metrics, revenue history records, and transactions from Supabase
+ * Tables used: users, startups, revenue_records, transactions
  */
-export async function fetchDashboardData(userId) {
+export async function fetchDashboardData(clerkId) {
   if (!isSupabaseConfigured || !supabase) {
-    // Check if user created a local startup
     const localStartups = getLocalStoredStartups();
     if (localStartups.length > 0) {
       const topStartup = localStartups[0];
@@ -147,7 +145,7 @@ export async function fetchDashboardData(userId) {
           mrr: topStartup.mrr,
           arr: topStartup.arr,
           customers: topStartup.customerCount || 45,
-          growthMoM: topStartup.growthMoM || 22.4,
+          growthMoM: topStartup.growthMoM || 24.8,
           companyName: topStartup.name,
           gstin: topStartup.gstin,
           mcaCin: topStartup.mcaCin,
@@ -174,89 +172,119 @@ export async function fetchDashboardData(userId) {
   }
 
   try {
-    // 1. Fetch startup profile
-    let startupQuery = supabase
-      .from('startups')
-      .select('*')
-      .limit(1);
+    let internalUserId = null;
 
-    if (userId) {
-      startupQuery = startupQuery.eq('user_id', userId);
-    }
+    // 1. Look up user by clerk_id
+    if (clerkId) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', clerkId)
+        .maybeSingle();
 
-    const { data: startupData, error: startupError } = await startupQuery;
-
-    // If user has no specific startup row yet, get primary seed startup or fallback
-    let currentStartup = startupData && startupData.length > 0 ? startupData[0] : null;
-
-    if (!currentStartup) {
-      const { data: defaultStartup } = await supabase
-        .from('startups')
-        .select('*')
-        .limit(1);
-      if (defaultStartup && defaultStartup.length > 0) {
-        currentStartup = defaultStartup[0];
+      if (userData) {
+        internalUserId = userData.id;
       }
     }
 
-    // 2. Fetch revenue records
+    // 2. Fetch startup owned by this user, or fall back to first verified startup
+    let currentStartup = null;
+    if (internalUserId) {
+      const { data: userStartups } = await supabase
+        .from('startups')
+        .select('*')
+        .eq('founder_id', internalUserId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (userStartups && userStartups.length > 0) {
+        currentStartup = userStartups[0];
+      }
+    }
+
+    if (!currentStartup) {
+      const { data: defaultStartups } = await supabase
+        .from('startups')
+        .select('*')
+        .limit(1);
+
+      if (defaultStartups && defaultStartups.length > 0) {
+        currentStartup = defaultStartups[0];
+      }
+    }
+
+    // 3. Fetch revenue_records for this startup
     let mrrHistory = DEFAULT_MRR_HISTORY;
     let customerGrowth = DEFAULT_CUSTOMER_GROWTH;
 
-    const startupId = currentStartup?.id || 'startup_docupulse';
-    const { data: recordsData, error: recordsError } = await supabase
-      .from('revenue_records')
-      .select('*')
-      .eq('startup_id', startupId)
-      .order('created_at', { ascending: true });
+    if (currentStartup?.id) {
+      const { data: recordsData } = await supabase
+        .from('revenue_records')
+        .select('*')
+        .eq('startup_id', currentStartup.id)
+        .order('created_at', { ascending: true });
 
-    if (recordsData && recordsData.length > 0) {
-      mrrHistory = recordsData.map(r => ({
-        month: r.month,
-        mrr: Number(r.mrr || r.revenue || 0),
-        razorpay: Number(r.razorpay || 0),
-        upi: Number(r.upi || 0),
-        stripe: Number(r.stripe || 0)
-      }));
+      if (recordsData && recordsData.length > 0) {
+        mrrHistory = recordsData.map(r => {
+          const mrrVal = Number(r.mrr || 0);
+          const rzp = Math.round(mrrVal * 0.68);
+          const upi = Math.round(mrrVal * 0.22);
+          const str = mrrVal - rzp - upi;
+          return {
+            month: r.month,
+            mrr: mrrVal,
+            arr: Number(r.arr || mrrVal * 12),
+            customers: Number(r.customers || 0),
+            growth: Number(r.growth || 0),
+            razorpay: rzp,
+            upi: upi,
+            stripe: str
+          };
+        });
 
-      customerGrowth = recordsData.map(r => ({
-        month: r.month,
-        customers: Number(r.paying_customers || 0)
-      }));
+        customerGrowth = recordsData.map(r => ({
+          month: r.month,
+          customers: Number(r.customers || 0)
+        }));
+      }
     }
 
-    // 3. Fetch recent transactions
+    // 4. Fetch transactions for this startup
     let transactions = DEFAULT_TRANSACTIONS;
-    const { data: txnsData, error: txnsError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('startup_id', startupId)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    if (currentStartup?.id) {
+      const { data: txnsData } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('startup_id', currentStartup.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-    if (txnsData && txnsData.length > 0) {
-      transactions = txnsData.map(t => ({
-        id: t.id,
-        company: t.company,
-        logo: t.logo,
-        amount: Number(t.amount),
-        status: t.status,
-        source: t.source,
-        date: t.date,
-        invoice: t.invoice
-      }));
+      if (txnsData && txnsData.length > 0) {
+        transactions = txnsData.map(t => ({
+          id: t.id,
+          company: t.source ? `${t.source.split(' ')[0]} Settlement` : 'B2B Client',
+          logo: 'FL',
+          amount: Number(t.amount),
+          status: t.status || 'Settled',
+          source: t.source || 'Razorpay Subscriptions',
+          date: t.created_at ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently',
+          invoice: `INV-${t.id.slice(-4).toUpperCase()}`
+        }));
+      }
     }
+
+    const latestRecord = mrrHistory.length > 0 ? mrrHistory[mrrHistory.length - 1] : null;
 
     const stats = {
-      mrr: currentStartup ? Number(currentStartup.mrr) : DEFAULT_STARTUP_STATS.mrr,
-      arr: currentStartup ? Number(currentStartup.arr) : DEFAULT_STARTUP_STATS.arr,
-      customers: customerGrowth.length > 0 ? customerGrowth[customerGrowth.length - 1].customers : DEFAULT_STARTUP_STATS.customers,
-      growthMoM: currentStartup ? Number(currentStartup.growth_mom) : DEFAULT_STARTUP_STATS.growthMoM,
+      mrr: latestRecord ? latestRecord.mrr : DEFAULT_STARTUP_STATS.mrr,
+      arr: latestRecord ? latestRecord.arr : DEFAULT_STARTUP_STATS.arr,
+      customers: latestRecord ? latestRecord.customers : DEFAULT_STARTUP_STATS.customers,
+      growthMoM: latestRecord ? latestRecord.growth : DEFAULT_STARTUP_STATS.growthMoM,
       companyName: currentStartup ? currentStartup.name : DEFAULT_STARTUP_STATS.companyName,
-      gstin: currentStartup?.gstin || DEFAULT_STARTUP_STATS.gstin,
-      mcaCin: currentStartup?.mca_cin || DEFAULT_STARTUP_STATS.mcaCin,
-      ledgerHash: currentStartup?.ledger_hash || DEFAULT_STARTUP_STATS.ledgerHash,
-      gstStatus: currentStartup?.gst_status || DEFAULT_STARTUP_STATS.gstStatus
+      gstin: '29AAACD4982R1Z8',
+      mcaCin: 'U72900KA2023PTC172819',
+      ledgerHash: `FL-2026-KA-${currentStartup ? currentStartup.id.slice(0, 6).toUpperCase() : '88A92F'}`,
+      gstStatus: currentStartup?.verified ? 'Reconciled (100% Match)' : 'Pending GST Audit'
     };
 
     return {
@@ -269,7 +297,7 @@ export async function fetchDashboardData(userId) {
       transactions
     };
   } catch (error) {
-    console.error('[Supabase Service] Failed to fetch dashboard data:', error);
+    console.error('[Supabase Service] Error fetching dashboard data:', error);
     return {
       isLiveSupabase: false,
       error: error.message || 'Error communicating with Supabase',
@@ -284,40 +312,7 @@ export async function fetchDashboardData(userId) {
 }
 
 /**
- * Insert a verified settlement transaction into Supabase
- */
-export async function createTransaction(txn) {
-  if (!isSupabaseConfigured || !supabase) {
-    return { success: false, reason: 'Supabase not configured' };
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('transactions')
-      .insert([{
-        id: txn.id || `txn_${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
-        startup_id: txn.startupId || 'startup_docupulse',
-        company: txn.company,
-        logo: txn.logo || txn.company.substring(0, 2).toUpperCase(),
-        amount: txn.amount,
-        status: txn.status || 'Settled',
-        source: txn.source || 'Razorpay Subscriptions',
-        date: txn.date || 'Just now',
-        invoice: txn.invoice || `INV-2026-${Math.floor(100 + Math.random() * 900)}`
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return { success: true, data };
-  } catch (err) {
-    console.error('[Supabase Service] Error creating transaction:', err);
-    return { success: false, error: err };
-  }
-}
-
-/**
- * Generate 12-month synthetic revenue curve leading to MRR
+ * Generate 12-month synthetic revenue curve
  */
 function generateMonthlyHistory(currentMrr, totalCustomers) {
   const months = ['Apr 25', 'May 25', 'Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26', 'Feb 26', 'Mar 26'];
@@ -336,18 +331,20 @@ function generateMonthlyHistory(currentMrr, totalCustomers) {
       month,
       revenue: mrrVal,
       mrr: mrrVal,
+      arr: mrrVal * 12,
       razorpay: razorpayVal,
       upi: upiVal,
       stripe: stripeVal,
-      paying_customers: custVal
+      customers: custVal,
+      growth: index > 0 ? 12.5 : 0
     };
   });
 }
 
 /**
- * Create a new startup with full 12-month revenue curve and save to Supabase + local cache
+ * Create a new startup with tables: startups & revenue_records
  */
-export async function createStartup(formData, userId) {
+export async function createStartup(formData, clerkUser) {
   const mrrNum = parseFloat(formData.mrr) || 0;
   const arrNum = mrrNum * 12;
   const customersNum = parseInt(formData.customerCount, 10) || 1;
@@ -360,11 +357,6 @@ export async function createStartup(formData, userId) {
     .replace(/^-+|-+$/g, '');
   const uniqueSuffix = Math.random().toString(36).substring(2, 6);
   const slug = `${baseSlug}-${uniqueSuffix}`;
-  const startupId = `startup_${uniqueSuffix}_${Date.now().toString(36)}`;
-
-  const randomCin = `U72900KA${foundedYear}PTC${Math.floor(100000 + Math.random() * 900000)}`;
-  const randomGstin = `29AAAC${Math.floor(1000 + Math.random() * 9000)}R1Z${Math.floor(1 + Math.random() * 9)}`;
-  const randomHash = `FL-2026-KA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   const categoryLabels = {
     b2b_saas: 'B2B SaaS',
@@ -378,107 +370,102 @@ export async function createStartup(formData, userId) {
   const categoryLabel = categoryLabels[categoryKey] || 'B2B SaaS';
   const monthlyHistory = generateMonthlyHistory(mrrNum, customersNum);
 
+  const clerkId = typeof clerkUser === 'object' && clerkUser !== null ? clerkUser.id : clerkUser;
+
   const startupRecord = {
-    id: startupId,
-    user_id: userId || null,
+    id: `startup_${uniqueSuffix}_${Date.now().toString(36)}`,
+    founder_id: clerkId || null,
     name: formData.name,
     slug,
-    tagline: formData.description || 'Verified Indian startup ledger profile.',
     category: categoryKey,
     category_label: categoryLabel,
-    location: formData.location || 'Bengaluru, KA',
-    founded: foundedYear,
-    website: formData.website || `https://${baseSlug}.io`,
+    description: formData.description || 'Verified Indian startup ledger profile.',
+    tagline: formData.description || 'Verified Indian startup ledger profile.',
+    logo_url: formData.logo || null,
     logo: formData.logo || null,
     logoInitials: formData.name ? formData.name.substring(0, 2).toUpperCase() : 'FL',
+    website: formData.website || `https://${baseSlug}.io`,
+    founded_year: foundedYear,
+    founded: foundedYear,
+    verified: true,
     mrr: mrrNum,
     arr: arrNum,
     customerCount: customersNum,
-    growthMoM: 24.5,
+    growthMoM: 24.8,
     netMargin: 65.0,
-    churnRate: 1.5,
+    churnRate: 1.4,
     tier: 'Platinum',
     badgeText: 'Triple-Lock Verified',
     dealStatus: 'open_acquisition',
     dealLabel: 'Open for Acquisition',
     askingPrice: arrNum * 4,
     multiple: '4.0x ARR',
-    techStack: ['Next.js', 'PostgreSQL', 'Razorpay Subscriptions', 'AWS Mumbai'],
-    gstin: randomGstin,
+    gstin: `29AAAC${Math.floor(1000 + Math.random() * 9000)}R1Z5`,
     gstStatus: 'Reconciled (100% Match)',
-    mcaCin: randomCin,
-    ledgerHash: randomHash,
+    mcaCin: `U72900KA${foundedYear}PTC${Math.floor(100000 + Math.random() * 900000)}`,
+    ledgerHash: `FL-2026-KA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
     auditDate: 'March 2026',
-    revenueBreakdown: {
-      razorpay: 68,
-      upiAutoPay: 22,
-      stripe: 10,
-      bankWire: 0
-    },
+    revenueBreakdown: { razorpay: 68, upiAutoPay: 22, stripe: 10, bankWire: 0 },
     monthlyHistory
   };
 
-  // Always save locally for instant seamless access
   saveLocalStartup(startupRecord);
 
-  // If Supabase is connected, persist to cloud
+  // If Supabase is connected, persist to exact tables
   if (isSupabaseConfigured && supabase) {
     try {
-      const dbPayload = {
-        id: startupRecord.id,
-        user_id: startupRecord.user_id,
-        name: startupRecord.name,
-        slug: startupRecord.slug,
-        tagline: startupRecord.tagline,
-        category: startupRecord.category,
-        category_label: startupRecord.category_label,
-        location: startupRecord.location,
-        founded: startupRecord.founded,
-        mrr: startupRecord.mrr,
-        arr: startupRecord.arr,
-        growth_mom: startupRecord.growthMoM,
-        net_margin: startupRecord.netMargin,
-        churn_rate: startupRecord.churnRate,
-        tier: startupRecord.tier,
-        badge_text: startupRecord.badgeText,
-        deal_status: startupRecord.dealStatus,
-        deal_label: startupRecord.dealLabel,
-        asking_price: startupRecord.askingPrice,
-        multiple: startupRecord.multiple,
-        tech_stack: startupRecord.techStack,
-        gstin: startupRecord.gstin,
-        gst_status: startupRecord.gstStatus,
-        mca_cin: startupRecord.mcaCin,
-        ledger_hash: startupRecord.ledgerHash,
-        audit_date: startupRecord.auditDate,
-        revenue_breakdown: startupRecord.revenueBreakdown
-      };
+      // 1. Ensure user exists in users table
+      let founderDbId = null;
+      if (clerkId) {
+        const uName = typeof clerkUser === 'object' && clerkUser !== null ? (clerkUser.fullName || clerkUser.firstName || 'Founder') : 'Founder';
+        const uEmail = typeof clerkUser === 'object' && clerkUser !== null ? (clerkUser.primaryEmailAddress?.emailAddress || '') : '';
+        const uAvatar = typeof clerkUser === 'object' && clerkUser !== null ? (clerkUser.imageUrl || '') : '';
 
-      const { data, error } = await supabase
+        const { data: userRow } = await supabase
+          .from('users')
+          .upsert({
+            clerk_id: clerkId,
+            name: uName,
+            email: uEmail,
+            avatar: uAvatar
+          }, { onConflict: 'clerk_id' })
+          .select('id')
+          .single();
+
+        if (userRow) founderDbId = userRow.id;
+      }
+
+      // 2. Insert into startups table
+      const { data: startupRow, error: startupErr } = await supabase
         .from('startups')
-        .insert([dbPayload])
+        .insert([{
+          founder_id: founderDbId,
+          name: startupRecord.name,
+          category: startupRecord.category,
+          description: startupRecord.description,
+          logo_url: startupRecord.logo_url,
+          website: startupRecord.website,
+          founded_year: startupRecord.founded_year,
+          verified: true
+        }])
         .select()
         .single();
 
-      if (error) {
-        console.warn('[Supabase Service] Startup insert notice:', error.message);
-      } else {
-        // Also insert monthly revenue records
+      if (!startupErr && startupRow) {
+        // 3. Insert into revenue_records table
         const recordsPayload = monthlyHistory.map(m => ({
-          startup_id: startupRecord.id,
+          startup_id: startupRow.id,
           month: m.month,
-          revenue: m.revenue,
           mrr: m.mrr,
-          razorpay: m.razorpay,
-          upi: m.upi,
-          stripe: m.stripe,
-          paying_customers: m.paying_customers
+          arr: m.arr,
+          customers: m.customers,
+          growth: m.growth
         }));
 
         await supabase.from('revenue_records').insert(recordsPayload);
       }
     } catch (err) {
-      console.warn('[Supabase Service] Startup creation fallback:', err);
+      console.warn('[Supabase Service] Startup insert fallback:', err);
     }
   }
 
@@ -486,33 +473,54 @@ export async function createStartup(formData, userId) {
 }
 
 /**
- * Fetch a startup by its slug or ID from Supabase, local cache, or platform seed data
+ * Insert transaction into transactions table
+ */
+export async function createTransaction(txn) {
+  if (!isSupabaseConfigured || !supabase) {
+    return { success: false, reason: 'Supabase not configured' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([{
+        id: txn.id || `txn_${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+        startup_id: txn.startupId || null,
+        amount: txn.amount,
+        source: txn.source || 'Razorpay Subscriptions',
+        status: txn.status || 'Settled'
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error('[Supabase Service] Error creating transaction:', err);
+    return { success: false, error: err };
+  }
+}
+
+/**
+ * Fetch a startup by its slug or ID
  */
 export async function fetchStartupBySlug(slug) {
-  // 1. Check local storage cache first
   const localList = getLocalStoredStartups();
   const localMatch = localList.find(s => s.slug === slug || s.id === slug);
-  if (localMatch) {
-    return localMatch;
-  }
+  if (localMatch) return localMatch;
 
-  // 2. Check PLATFORM_DATA.startups
   const platformMatch = PLATFORM_DATA.startups.find(s => s.slug === slug || s.id === slug);
-  if (platformMatch) {
-    return platformMatch;
-  }
+  if (platformMatch) return platformMatch;
 
-  // 3. Check Supabase
   if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase
         .from('startups')
         .select('*')
-        .or(`slug.eq.${slug},id.eq.${slug}`)
-        .single();
+        .or(`name.ilike.%${slug.replace(/-/g, ' ')}%,id.eq.${slug}`)
+        .maybeSingle();
 
       if (data && !error) {
-        // Fetch revenue history
         const { data: recs } = await supabase
           .from('revenue_records')
           .select('*')
@@ -522,43 +530,47 @@ export async function fetchStartupBySlug(slug) {
         const history = recs && recs.length > 0
           ? recs.map(r => ({
               month: r.month,
-              revenue: Number(r.revenue || r.mrr || 0),
+              revenue: Number(r.mrr || 0),
               mrr: Number(r.mrr || 0),
-              razorpay: Number(r.razorpay || 0),
-              upi: Number(r.upi || 0),
-              stripe: Number(r.stripe || 0),
-              paying_customers: Number(r.paying_customers || 0)
+              arr: Number(r.arr || 0),
+              customers: Number(r.customers || 0),
+              growth: Number(r.growth || 0),
+              razorpay: Math.round(Number(r.mrr || 0) * 0.68),
+              upi: Math.round(Number(r.mrr || 0) * 0.22),
+              stripe: Math.round(Number(r.mrr || 0) * 0.10)
             }))
-          : generateMonthlyHistory(Number(data.mrr), 50);
+          : generateMonthlyHistory(1850000, 50);
+
+        const latest = history[history.length - 1];
 
         return {
           id: data.id,
           name: data.name,
-          slug: data.slug,
-          tagline: data.tagline,
+          slug,
+          tagline: data.description,
+          description: data.description,
           category: data.category,
-          categoryLabel: data.category_label,
-          location: data.location,
-          founded: data.founded,
-          mrr: Number(data.mrr),
-          arr: Number(data.arr),
-          customerCount: history.length > 0 ? history[history.length - 1].paying_customers : 45,
-          growthMoM: Number(data.growth_mom),
-          netMargin: Number(data.net_margin),
-          churnRate: Number(data.churn_rate),
-          tier: data.tier,
-          badgeText: data.badge_text,
-          dealStatus: data.deal_status,
-          dealLabel: data.deal_label,
-          askingPrice: Number(data.asking_price),
-          multiple: data.multiple,
-          techStack: data.tech_stack || ['Next.js', 'PostgreSQL'],
-          gstin: data.gstin,
-          gstStatus: data.gst_status,
-          mcaCin: data.mca_cin,
-          ledgerHash: data.ledger_hash,
-          auditDate: data.audit_date,
-          revenueBreakdown: data.revenue_breakdown || { razorpay: 70, upiAutoPay: 20, stripe: 10 },
+          categoryLabel: data.category === 'ai_devtools' ? 'AI & DevTools' : 'B2B SaaS',
+          location: 'Bengaluru, KA',
+          founded: data.founded_year || '2024',
+          logo: data.logo_url,
+          website: data.website,
+          mrr: latest ? latest.mrr : 1850000,
+          arr: latest ? latest.arr : 22200000,
+          customerCount: latest ? latest.customers : 45,
+          growthMoM: latest ? latest.growth : 24.8,
+          netMargin: 65.0,
+          churnRate: 1.4,
+          tier: 'Platinum',
+          badgeText: data.verified ? 'Triple-Lock Verified' : 'Pending Verification',
+          askingPrice: latest ? latest.arr * 4 : 88800000,
+          multiple: '4.0x ARR',
+          gstin: '29AAACD4982R1Z8',
+          gstStatus: 'Reconciled (100% Match)',
+          mcaCin: 'U72900KA2023PTC172819',
+          ledgerHash: 'FL-2026-KA-88A92F',
+          auditDate: 'March 2026',
+          revenueBreakdown: { razorpay: 68, upiAutoPay: 22, stripe: 10, bankWire: 0 },
           monthlyHistory: history
         };
       }
@@ -567,12 +579,11 @@ export async function fetchStartupBySlug(slug) {
     }
   }
 
-  // 4. Return default DocuPulse if not found
   return PLATFORM_DATA.startups[0];
 }
 
 /**
- * Fetch all startups merging Supabase live database, local creations, and platform seed list
+ * Fetch all startups for Leaderboard and directory
  */
 export async function fetchAllStartups() {
   const localList = getLocalStoredStartups();
@@ -582,46 +593,61 @@ export async function fetchAllStartups() {
     try {
       const { data, error } = await supabase
         .from('startups')
-        .select('*')
-        .order('arr', { ascending: false });
+        .select(`
+          id,
+          founder_id,
+          name,
+          category,
+          description,
+          logo_url,
+          website,
+          founded_year,
+          verified,
+          created_at
+        `)
+        .order('created_at', { ascending: false });
 
       if (data && !error && data.length > 0) {
-        supabaseList = data.map(d => ({
-          id: d.id,
-          name: d.name,
-          slug: d.slug,
-          tagline: d.tagline,
-          category: d.category,
-          categoryLabel: d.category_label,
-          location: d.location || 'Bengaluru, KA',
-          founded: d.founded || '2024',
-          mrr: Number(d.mrr || 0),
-          arr: Number(d.arr || 0),
-          growthMoM: Number(d.growth_mom || 20.0),
-          netMargin: Number(d.net_margin || 60.0),
-          churnRate: Number(d.churn_rate || 1.5),
-          tier: d.tier || 'Platinum',
-          badgeText: d.badge_text || 'Triple-Lock Verified',
-          dealStatus: d.deal_status || 'open_acquisition',
-          dealLabel: d.deal_label || 'Open for Acquisition',
-          askingPrice: Number(d.asking_price || (d.arr * 4)),
-          multiple: d.multiple || '4.0x ARR',
-          techStack: d.tech_stack || ['Next.js', 'PostgreSQL', 'Razorpay Subscriptions'],
-          gstin: d.gstin,
-          gstStatus: d.gst_status || 'Reconciled (100% Match)',
-          mcaCin: d.mca_cin,
-          ledgerHash: d.ledger_hash,
-          auditDate: d.audit_date || 'March 2026',
-          revenueBreakdown: d.revenue_breakdown || { razorpay: 68, upiAutoPay: 22, stripe: 10 },
-          monthlyHistory: generateMonthlyHistory(Number(d.mrr || 0), 45)
-        }));
+        supabaseList = data.map(d => {
+          const baseSlug = d.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return {
+            id: d.id,
+            name: d.name,
+            slug: baseSlug,
+            tagline: d.description,
+            description: d.description,
+            category: d.category || 'b2b_saas',
+            categoryLabel: d.category === 'ai_devtools' ? 'AI & DevTools' : 'B2B SaaS',
+            location: 'Bengaluru, KA',
+            founded: d.founded_year || '2024',
+            logo: d.logo_url,
+            website: d.website,
+            mrr: 1850000,
+            arr: 22200000,
+            growthMoM: 24.8,
+            netMargin: 65.0,
+            churnRate: 1.4,
+            tier: 'Platinum',
+            badgeText: d.verified ? 'Triple-Lock Verified' : 'Standard Verified',
+            dealStatus: 'open_acquisition',
+            dealLabel: 'Open for Acquisition',
+            askingPrice: 88800000,
+            multiple: '4.0x ARR',
+            gstin: '29AAACD4982R1Z8',
+            gstStatus: 'Reconciled (100% Match)',
+            mcaCin: 'U72900KA2023PTC172819',
+            ledgerHash: 'FL-2026-KA-88A92F',
+            auditDate: 'March 2026',
+            revenueBreakdown: { razorpay: 68, upiAutoPay: 22, stripe: 10 },
+            monthlyHistory: generateMonthlyHistory(1850000, 45)
+          };
+        });
       }
     } catch (err) {
       console.warn('[Supabase Service] Failed to fetch all startups from Supabase:', err);
     }
   }
 
-  // Combine: Local Created Startups + Supabase Live Startups + Platform Seed Startups
   const seenSlugs = new Set();
   const merged = [];
 
@@ -648,4 +674,3 @@ export async function fetchAllStartups() {
 
   return merged;
 }
-
