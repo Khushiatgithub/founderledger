@@ -8,16 +8,20 @@ import {
   SlidersHorizontal, 
   Building2, 
   CheckCircle2, 
-  Sparkles,
-  ExternalLink,
-  ChevronRight,
-  Filter,
-  BadgeCheck,
-  RotateCcw,
-  Layers
+  Sparkles, 
+  ExternalLink, 
+  ChevronRight, 
+  ChevronLeft,
+  Filter, 
+  BadgeCheck, 
+  RotateCcw, 
+  Layers,
+  FileCheck2,
+  Lock
 } from 'lucide-react';
-import { PLATFORM_DATA } from '../data/startups';
 import { formatCurrency } from '../utils/formatters';
+import { useLiveStartups } from '../hooks/useLiveStartups';
+import { Link } from 'react-router-dom';
 
 // Brand color mapping for realistic Indian startup logos
 const LOGO_COLORS = {
@@ -34,7 +38,7 @@ const LOGO_COLORS = {
 // Helper component to render animated mini SVG sparkline
 function Sparkline({ data = [], color = "#2563EB", id = "spark" }) {
   if (!data || data.length < 2) return null;
-  const revenues = data.map(d => d.revenue);
+  const revenues = data.map(d => d.revenue || d.mrr || 0);
   const min = Math.min(...revenues) * 0.92;
   const max = Math.max(...revenues) * 1.08;
   const width = 110;
@@ -42,7 +46,7 @@ function Sparkline({ data = [], color = "#2563EB", id = "spark" }) {
 
   const points = revenues.map((val, idx) => {
     const x = (idx / (revenues.length - 1)) * width;
-    const y = height - ((val - min) / (max - min)) * height;
+    const y = max === min ? height / 2 : height - ((val - min) / (max - min)) * height;
     return { x, y, val };
   });
 
@@ -83,17 +87,19 @@ function Sparkline({ data = [], color = "#2563EB", id = "spark" }) {
   );
 }
 
-export default function Leaderboard({ currency, onSelectStartup }) {
+const PAGE_SIZE = 6;
+
+export default function Leaderboard({ currency = 'INR', onSelectStartup }) {
+  const { startups, categories, loading } = useLiveStartups();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dealFilter, setDealFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('arr_desc');
-  const [isLoading, setIsLoading] = useState(false);
+  const [sortBy, setSortBy] = useState('arr_desc'); // 'arr_desc', 'arr_asc', 'mrr_desc', 'mrr_asc', 'growth_desc', 'margin_desc'
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleCategoryChange = (catId) => {
-    setIsLoading(true);
     setActiveCategory(catId);
-    setTimeout(() => setIsLoading(false), 200);
+    setCurrentPage(1);
   };
 
   const handleResetFilters = () => {
@@ -101,37 +107,50 @@ export default function Leaderboard({ currency, onSelectStartup }) {
     setSearchQuery('');
     setDealFilter('all');
     setSortBy('arr_desc');
+    setCurrentPage(1);
   };
 
   const filteredStartups = useMemo(() => {
-    let list = [...PLATFORM_DATA.startups];
+    let list = [...startups];
 
+    // Filter by category
     if (activeCategory !== 'all') {
       list = list.filter(s => s.category === activeCategory);
     }
 
+    // Search by startup name, tagline, location, tech stack
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(s =>
-        s.name.toLowerCase().includes(q) ||
-        s.tagline.toLowerCase().includes(q) ||
-        s.location.toLowerCase().includes(q) ||
-        s.founder?.name?.toLowerCase().includes(q) ||
-        (s.techStack && s.techStack.some(t => t.toLowerCase().includes(q)))
+        (s.name || '').toLowerCase().includes(q) ||
+        (s.tagline || '').toLowerCase().includes(q) ||
+        (s.location || '').toLowerCase().includes(q) ||
+        (s.categoryLabel || '').toLowerCase().includes(q)
       );
     }
 
+    // Filter by Deal status
     if (dealFilter !== 'all') {
       list = list.filter(s => s.dealStatus === dealFilter);
     }
 
-    if (sortBy === 'arr_desc') list.sort((a, b) => b.arr - a.arr);
-    else if (sortBy === 'arr_asc') list.sort((a, b) => a.arr - b.arr);
-    else if (sortBy === 'growth_desc') list.sort((a, b) => b.growthMoM - a.growthMoM);
-    else if (sortBy === 'margin_desc') list.sort((a, b) => b.netMargin - a.netMargin);
+    // Multi-metric sorting
+    if (sortBy === 'arr_desc') list.sort((a, b) => (b.arr || 0) - (a.arr || 0));
+    else if (sortBy === 'arr_asc') list.sort((a, b) => (a.arr || 0) - (b.arr || 0));
+    else if (sortBy === 'mrr_desc') list.sort((a, b) => (b.mrr || 0) - (a.mrr || 0));
+    else if (sortBy === 'mrr_asc') list.sort((a, b) => (a.mrr || 0) - (b.mrr || 0));
+    else if (sortBy === 'growth_desc') list.sort((a, b) => (b.growthMoM || 0) - (a.growthMoM || 0));
+    else if (sortBy === 'margin_desc') list.sort((a, b) => (b.netMargin || 0) - (a.netMargin || 0));
 
     return list;
-  }, [activeCategory, searchQuery, dealFilter, sortBy]);
+  }, [startups, activeCategory, searchQuery, dealFilter, sortBy]);
+
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredStartups.length / PAGE_SIZE) || 1;
+  const paginatedStartups = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredStartups.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredStartups, currentPage]);
 
   return (
     <section className="section-wrapper" id="leaderboard-section">
@@ -160,8 +179,11 @@ export default function Leaderboard({ currency, onSelectStartup }) {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search startups by name, tech stack, founder, or city (e.g. Bengaluru, Pune)..."
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search startups by name, category, or location (e.g. DocuPulse, FinTech)..."
                 style={{
                   width: '100%',
                   padding: '10px 14px 10px 40px',
@@ -176,7 +198,10 @@ export default function Leaderboard({ currency, onSelectStartup }) {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCurrentPage(1);
+                  }}
                   style={{
                     position: 'absolute',
                     right: '12px',
@@ -195,10 +220,14 @@ export default function Leaderboard({ currency, onSelectStartup }) {
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Sort & Deal Filters */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setCurrentPage(1);
+                }}
                 style={{
                   padding: '10px 14px',
                   background: 'var(--bg-subtle)',
@@ -213,14 +242,19 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                 }}
               >
                 <option value="arr_desc">Highest Verified ARR</option>
+                <option value="arr_asc">Lowest ARR First</option>
+                <option value="mrr_desc">Highest Monthly MRR</option>
+                <option value="mrr_asc">Lowest MRR First</option>
                 <option value="growth_desc">Highest Growth Rate (%)</option>
                 <option value="margin_desc">Highest Profit Margin</option>
-                <option value="arr_asc">Lowest ARR First</option>
               </select>
 
               <select
                 value={dealFilter}
-                onChange={(e) => setDealFilter(e.target.value)}
+                onChange={(e) => {
+                  setDealFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 style={{
                   padding: '10px 14px',
                   background: 'var(--bg-subtle)',
@@ -234,16 +268,16 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                   outline: 'none'
                 }}
               >
-                <option value="all">All Deals</option>
-                <option value="open_acquisition">M&A Acquisition Deals</option>
+                <option value="all">All Listings</option>
+                <option value="open_acquisition">Open for Acquisition</option>
                 <option value="not_for_sale">Verified Proofs Only</option>
               </select>
             </div>
           </div>
 
-          {/* Row 2: Category Filter Buttons */}
+          {/* Row 2: Category Filter Buttons with Live Counts */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-            {PLATFORM_DATA.categories.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => handleCategoryChange(cat.id)}
@@ -280,7 +314,7 @@ export default function Leaderboard({ currency, onSelectStartup }) {
           </div>
 
           {/* Skeletons when Loading */}
-          {isLoading ? (
+          {loading ? (
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[1, 2, 3, 4, 5].map(k => (
                 <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -295,58 +329,84 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                 </div>
               ))}
             </div>
-          ) : filteredStartups.length > 0 ? (
-            filteredStartups.map((startup, idx) => {
+          ) : paginatedStartups.length > 0 ? (
+            paginatedStartups.map((startup, idx) => {
+              const globalIndex = (currentPage - 1) * PAGE_SIZE + idx;
               const logo = LOGO_COLORS[startup.id] || { 
                 bg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', 
                 text: '#FFFFFF', 
-                initials: startup.name.slice(0, 2).toUpperCase() 
+                initials: startup.name ? startup.name.slice(0, 2).toUpperCase() : 'FL' 
               };
 
               return (
                 <motion.div
-                  key={startup.id}
+                  key={startup.id || startup.slug}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.15, delay: idx * 0.02 }}
-                  onClick={() => onSelectStartup(startup)}
+                  onClick={() => onSelectStartup ? onSelectStartup(startup) : null}
                   className="leaderboard-row"
                 >
                   {/* Rank */}
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: idx < 3 ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
-                    #{idx + 1}
+                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: globalIndex < 3 ? 'var(--brand-primary)' : 'var(--text-muted)' }}>
+                    #{globalIndex + 1}
                   </div>
 
                   {/* Company Logo & Details */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '10px',
-                      background: logo.bg,
-                      color: logo.text,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 800,
-                      fontSize: '0.875rem',
-                      flexShrink: 0,
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)'
-                    }}>
-                      {logo.initials}
-                    </div>
+                    {startup.logo ? (
+                      <img
+                        src={startup.logo}
+                        alt={startup.name}
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '10px',
+                          objectFit: 'cover',
+                          border: '1px solid var(--border-light)',
+                          flexShrink: 0
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
+                        background: logo.bg,
+                        color: logo.text,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.875rem',
+                        flexShrink: 0,
+                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)'
+                      }}>
+                        {logo.initials}
+                      </div>
+                    )}
+
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <Link
+                          to={`/startup/${startup.slug}`}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-primary)', textDecoration: 'none' }}
+                        >
                           {startup.name}
-                        </span>
+                        </Link>
                         <span className="badge badge-verified" style={{ fontSize: '0.625rem', padding: '2px 6px' }}>
                           <ShieldCheck size={10} />
-                          <span>Razorpay</span>
+                          <span>Triple-Lock</span>
                         </span>
+                        {startup.tier && (
+                          <span className="badge badge-brand" style={{ fontSize: '0.625rem', padding: '2px 6px' }}>
+                            {startup.tier}
+                          </span>
+                        )}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }}>
-                        {startup.location} • {startup.tagline}
+                        {startup.location || 'India'} • {startup.tagline}
                       </div>
                     </div>
                   </div>
@@ -366,34 +426,39 @@ export default function Leaderboard({ currency, onSelectStartup }) {
                   <div className="hide-on-tablet">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-dark)' }}>
                       <TrendingUp size={14} />
-                      <span>+{startup.growthMoM}%</span>
+                      <span>+{startup.growthMoM || 24}%</span>
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Margin: {startup.netMargin}%
+                      Match: 100% Tax
                     </div>
                   </div>
 
                   {/* Animated 12-Month Sparkline Curve */}
                   <div className="hide-on-tablet">
-                    <Sparkline data={startup.monthlyHistory} id={startup.id} />
+                    <Sparkline data={startup.monthlyHistory} id={startup.id || startup.slug} />
                   </div>
 
                   {/* Valuation / Multiple */}
                   <div className="hide-on-mobile">
                     <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                      {startup.askingPrice ? formatCurrency(startup.askingPrice, currency) : formatCurrency(startup.arr * 4.2, currency)}
+                      {startup.askingPrice ? formatCurrency(startup.askingPrice, currency) : formatCurrency((startup.arr || 0) * 4.0, currency)}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
-                      {startup.multiple || '4.2x Multiple'}
+                      {startup.multiple || '4.0x Multiple'}
                     </div>
                   </div>
 
-                  {/* Action CTA */}
+                  {/* Action CTA Link */}
                   <div style={{ textAlign: 'right' }}>
-                    <button className="btn btn-secondary btn-sm" style={{ padding: '5px 10px', fontSize: '0.75rem' }}>
-                      <span>Audit Ledger</span>
+                    <Link
+                      to={`/startup/${startup.slug}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '5px 10px', fontSize: '0.75rem', textDecoration: 'none' }}
+                    >
+                      <span>Audit Profile</span>
                       <ChevronRight size={13} />
-                    </button>
+                    </Link>
                   </div>
                 </motion.div>
               );
@@ -427,10 +492,56 @@ export default function Leaderboard({ currency, onSelectStartup }) {
 
         </div>
 
-        {/* Leaderboard Footer Trust Stamp */}
-        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '8px' }}>
-          <div>Showing <strong>{filteredStartups.length}</strong> audited Indian startups (Ranked by ARR)</div>
-          <div>All data authenticated via <strong>Razorpay Subscriptions + GSTR-3B Tax Portal</strong></div>
+        {/* Pagination & Footer Trust Info */}
+        <div style={{
+          marginTop: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '16px',
+          fontSize: '0.8125rem',
+          color: 'var(--text-muted)'
+        }}>
+          <div>
+            Showing <strong>{filteredStartups.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}</strong> - <strong>{Math.min(currentPage * PAGE_SIZE, filteredStartups.length)}</strong> of <strong>{filteredStartups.length}</strong> audited Indian startups
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: '6px 10px', fontSize: '0.75rem', gap: '4px' }}
+              >
+                <ChevronLeft size={14} />
+                <span>Prev</span>
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`btn btn-sm ${currentPage === pageNum ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ width: '32px', height: '32px', padding: 0, fontSize: '0.75rem', borderRadius: '8px' }}
+                >
+                  {pageNum}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: '6px 10px', fontSize: '0.75rem', gap: '4px' }}
+              >
+                <span>Next</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
         </div>
 
       </div>

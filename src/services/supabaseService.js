@@ -18,6 +18,9 @@ function saveLocalStartup(startup) {
     const existing = getLocalStoredStartups();
     const updated = [startup, ...existing.filter(s => s.id !== startup.id && s.slug !== startup.slug)];
     localStorage.setItem(LOCAL_STORAGE_STARTUPS_KEY, JSON.stringify(updated));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('founderledger:startup_created', { detail: startup }));
+    }
   } catch (err) {
     console.warn('Could not cache startup to localStorage:', err);
   }
@@ -567,3 +570,82 @@ export async function fetchStartupBySlug(slug) {
   // 4. Return default DocuPulse if not found
   return PLATFORM_DATA.startups[0];
 }
+
+/**
+ * Fetch all startups merging Supabase live database, local creations, and platform seed list
+ */
+export async function fetchAllStartups() {
+  const localList = getLocalStoredStartups();
+  let supabaseList = [];
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('startups')
+        .select('*')
+        .order('arr', { ascending: false });
+
+      if (data && !error && data.length > 0) {
+        supabaseList = data.map(d => ({
+          id: d.id,
+          name: d.name,
+          slug: d.slug,
+          tagline: d.tagline,
+          category: d.category,
+          categoryLabel: d.category_label,
+          location: d.location || 'Bengaluru, KA',
+          founded: d.founded || '2024',
+          mrr: Number(d.mrr || 0),
+          arr: Number(d.arr || 0),
+          growthMoM: Number(d.growth_mom || 20.0),
+          netMargin: Number(d.net_margin || 60.0),
+          churnRate: Number(d.churn_rate || 1.5),
+          tier: d.tier || 'Platinum',
+          badgeText: d.badge_text || 'Triple-Lock Verified',
+          dealStatus: d.deal_status || 'open_acquisition',
+          dealLabel: d.deal_label || 'Open for Acquisition',
+          askingPrice: Number(d.asking_price || (d.arr * 4)),
+          multiple: d.multiple || '4.0x ARR',
+          techStack: d.tech_stack || ['Next.js', 'PostgreSQL', 'Razorpay Subscriptions'],
+          gstin: d.gstin,
+          gstStatus: d.gst_status || 'Reconciled (100% Match)',
+          mcaCin: d.mca_cin,
+          ledgerHash: d.ledger_hash,
+          auditDate: d.audit_date || 'March 2026',
+          revenueBreakdown: d.revenue_breakdown || { razorpay: 68, upiAutoPay: 22, stripe: 10 },
+          monthlyHistory: generateMonthlyHistory(Number(d.mrr || 0), 45)
+        }));
+      }
+    } catch (err) {
+      console.warn('[Supabase Service] Failed to fetch all startups from Supabase:', err);
+    }
+  }
+
+  // Combine: Local Created Startups + Supabase Live Startups + Platform Seed Startups
+  const seenSlugs = new Set();
+  const merged = [];
+
+  for (const s of localList) {
+    if (s.slug && !seenSlugs.has(s.slug)) {
+      seenSlugs.add(s.slug);
+      merged.push(s);
+    }
+  }
+
+  for (const s of supabaseList) {
+    if (s.slug && !seenSlugs.has(s.slug)) {
+      seenSlugs.add(s.slug);
+      merged.push(s);
+    }
+  }
+
+  for (const s of PLATFORM_DATA.startups) {
+    if (s.slug && !seenSlugs.has(s.slug)) {
+      seenSlugs.add(s.slug);
+      merged.push(s);
+    }
+  }
+
+  return merged;
+}
+

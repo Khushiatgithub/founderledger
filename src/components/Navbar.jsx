@@ -47,7 +47,7 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
 
         {/* Desktop Nav Links */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className="hide-on-tablet">
-          <a href="/#leaderboard-section" className="nav-link">Leaderboard</a>
+          <Link to="/leaderboard" className="nav-link">Leaderboard</Link>
           <a href="/#verify-section" className="nav-link">Verification</a>
           <a href="/#marketplace-section" className="nav-link">M&A Deals</a>
           <a href="/#valuation-section" className="nav-link">Valuation</a>
@@ -221,7 +221,7 @@ export default function Navbar({ currency, setCurrency, theme, setTheme, onOpenC
               boxShadow: 'var(--shadow-lg)'
             }}
           >
-            <a href="/#leaderboard-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Leaderboard</a>
+            <Link to="/leaderboard" onClick={() => setMobileMenuOpen(false)} className="nav-link">Leaderboard</Link>
             <a href="/#verify-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Verification</a>
             <a href="/#marketplace-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">M&A Deals</a>
             <a href="/#valuation-section" onClick={() => setMobileMenuOpen(false)} className="nav-link">Valuation</a>
