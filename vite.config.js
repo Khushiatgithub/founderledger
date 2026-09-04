@@ -14,6 +14,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           clerk: ['@clerk/clerk-react'],
+          supabase: ['@supabase/supabase-js'],
           router: ['react-router-dom'],
           charts: ['recharts'],
           motion: ['framer-motion'],

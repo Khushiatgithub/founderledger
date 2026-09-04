@@ -6,8 +6,6 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  LineChart,
-  Line,
   BarChart,
   Bar,
   PieChart,
@@ -53,72 +51,13 @@ import {
   CheckCircle2,
   Clock,
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  Database,
+  Send
 } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 import { useCountUp } from '../utils/useCountUp';
-
-// 12-Month MRR History Data
-const MRR_HISTORY_1Y = [
-  { month: 'Apr 25', mrr: 780000, razorpay: 530000, upi: 170000, stripe: 80000 },
-  { month: 'May 25', mrr: 890000, razorpay: 605000, upi: 195000, stripe: 90000 },
-  { month: 'Jun 25', mrr: 1020000, razorpay: 693000, upi: 224000, stripe: 103000 },
-  { month: 'Jul 25', mrr: 1180000, razorpay: 802000, upi: 260000, stripe: 118000 },
-  { month: 'Aug 25', mrr: 1310000, razorpay: 890000, upi: 288000, stripe: 132000 },
-  { month: 'Sep 25', mrr: 1420000, razorpay: 965000, upi: 312000, stripe: 143000 },
-  { month: 'Oct 25', mrr: 1540000, razorpay: 1047000, upi: 339000, stripe: 154000 },
-  { month: 'Nov 25', mrr: 1620000, razorpay: 1101000, upi: 356000, stripe: 163000 },
-  { month: 'Dec 25', mrr: 1690000, razorpay: 1149000, upi: 372000, stripe: 169000 },
-  { month: 'Jan 26', mrr: 1740000, razorpay: 1183000, upi: 383000, stripe: 174000 },
-  { month: 'Feb 26', mrr: 1810000, razorpay: 1230000, upi: 398000, stripe: 182000 },
-  { month: 'Mar 26', mrr: 1850000, razorpay: 1258000, upi: 407000, stripe: 185000 }
-];
-
-// Category Breakdown Data
-const CATEGORY_REVENUE = [
-  { category: 'B2B SaaS', arr: 18400000, color: '#2563EB' },
-  { category: 'AI DevTools', arr: 11200000, color: '#7C3AED' },
-  { category: 'FinTech', arr: 7600000, color: '#059669' },
-  { category: 'D2C Commerce', arr: 6400000, color: '#D97706' },
-  { category: 'EdTech', arr: 4600000, color: '#0284C7' }
-];
-
-// Customer Growth Data
-const CUSTOMER_GROWTH = [
-  { month: 'Apr 25', customers: 85 },
-  { month: 'May 25', customers: 98 },
-  { month: 'Jun 25', customers: 114 },
-  { month: 'Jul 25', customers: 132 },
-  { month: 'Aug 25', customers: 149 },
-  { month: 'Sep 25', customers: 165 },
-  { month: 'Oct 25', customers: 182 },
-  { month: 'Nov 25', customers: 198 },
-  { month: 'Dec 25', customers: 215 },
-  { month: 'Jan 26', customers: 228 },
-  { month: 'Feb 26', customers: 239 },
-  { month: 'Mar 26', customers: 248 }
-];
-
-// ARR Gateway Distribution Donut Data
-const GATEWAY_DISTRIBUTION = [
-  { name: 'Razorpay Subscriptions', value: 68, color: '#2563EB' },
-  { name: 'UPI AutoPay (PhonePe/GPay)', value: 22, color: '#10B981' },
-  { name: 'Stripe India (USD/SaaS)', value: 10, color: '#6366F1' }
-];
-
-// Realistic Transactions Dataset
-const INITIAL_TRANSACTIONS = [
-  { id: 'txn_9881A', company: 'Zepto Logistics', logo: 'ZL', amount: 45000, status: 'Captured', date: '2 mins ago', source: 'Razorpay Subscriptions', invoice: 'INV-2026-881' },
-  { id: 'txn_9882B', company: 'Swiggy Instamart', logo: 'SI', amount: 124000, status: 'Settled', date: '14 mins ago', source: 'ICICI Bank Wire', invoice: 'INV-2026-882' },
-  { id: 'txn_9883C', company: 'CRED Club', logo: 'CC', amount: 18500, status: 'Reconciled', date: '1 hour ago', source: 'UPI AutoPay', invoice: 'INV-2026-883' },
-  { id: 'txn_9884D', company: 'Groww Capital', logo: 'GC', amount: 84000, status: 'Captured', date: '2 hours ago', source: 'Razorpay Subscriptions', invoice: 'INV-2026-884' },
-  { id: 'txn_9885E', company: 'Postman Dev', logo: 'PD', amount: 29999, status: 'Settled', date: '3 hours ago', source: 'Stripe India', invoice: 'INV-2026-885' },
-  { id: 'txn_9886F', company: 'Meesho Store', logo: 'MS', amount: 62500, status: 'Reconciled', date: 'Today, 11:30 AM', source: 'GSTR-3B ARN', invoice: 'INV-2026-886' },
-  { id: 'txn_9887G', company: 'Unacademy Plus', logo: 'UP', amount: 48000, status: 'Captured', date: 'Today, 09:15 AM', source: 'UPI AutoPay', invoice: 'INV-2026-887' },
-  { id: 'txn_9888H', company: 'Razorpay Labs', logo: 'RL', amount: 95000, status: 'Settled', date: 'Yesterday, 6:45 PM', source: 'Razorpay Subscriptions', invoice: 'INV-2026-888' },
-  { id: 'txn_9889I', company: 'Zomato Fleet Ops', logo: 'ZF', amount: 110000, status: 'Settled', date: 'Yesterday, 3:20 PM', source: 'ICICI Bank Wire', invoice: 'INV-2026-889' },
-  { id: 'txn_9890J', company: 'DevStudio HQ', logo: 'DH', amount: 14500, status: 'Captured', date: '2 days ago', source: 'Razorpay Subscriptions', invoice: 'INV-2026-890' }
-];
+import { useSupabaseData } from '../hooks/useSupabaseData';
 
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -132,11 +71,34 @@ export default function DashboardPage() {
   const [copiedKey, setCopiedKey] = useState(false);
   const [dataRoomActive, setDataRoomActive] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAddTxnModal, setShowAddTxnModal] = useState(false);
+  const [newTxnCompany, setNewTxnCompany] = useState('');
+  const [newTxnAmount, setNewTxnAmount] = useState('');
+  const [newTxnSource, setNewTxnSource] = useState('Razorpay Subscriptions');
+  const [isSubmittingTxn, setIsSubmittingTxn] = useState(false);
+
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Razorpay Settlement Batched', desc: '₹1,24,000 credited to ICICI merchant escrow account.', time: '14m ago', read: false },
     { id: 2, title: 'GSTR-3B Tax Match Confirmed', desc: 'March 2026 filed tax returns 100% matched with MCA CIN.', time: '2h ago', read: false },
     { id: 3, title: 'Peak XV Partners Requested NDA', desc: 'Investor requested private access to your audited deal room.', time: '5h ago', read: false }
   ]);
+
+  // Connect to Supabase Live Hook
+  const {
+    loading,
+    refreshing,
+    error,
+    isLiveSupabase,
+    isConfigured,
+    stats,
+    mrrHistory,
+    categoryRevenue,
+    customerGrowth,
+    gatewayDistribution,
+    transactions,
+    refetch,
+    addTransaction
+  } = useSupabaseData(user);
 
   if (!isLoaded) {
     return (
@@ -151,7 +113,7 @@ export default function DashboardPage() {
   }
 
   const founderName = user.fullName || user.firstName || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Founder';
-  const companyName = user.publicMetadata?.companyName || 'DocuPulse AI';
+  const companyName = user.publicMetadata?.companyName || stats.companyName || 'DocuPulse AI';
   const apiKey = 'fl_live_key_98a7fbc210084ad99';
 
   const handleCopyKey = () => {
@@ -164,23 +126,25 @@ export default function DashboardPage() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  // Animated Count-Up Numbers
-  const animatedMRR = useCountUp(1850000, 1000);
-  const animatedARR = useCountUp(22200000, 1000);
-  const animatedCustomers = useCountUp(248, 800);
-  const animatedGrowth = useCountUp(24.8, 800);
+  // Animated Count-Up Numbers bound to live Supabase stats
+  const animatedMRR = useCountUp(stats.mrr || 1850000, 1000);
+  const animatedARR = useCountUp(stats.arr || 22200000, 1000);
+  const animatedCustomers = useCountUp(stats.customers || 248, 800);
+  const animatedGrowth = useCountUp(stats.growthMoM || 24.8, 800);
 
   // Filtered transactions
   const filteredTransactions = useMemo(() => {
-    return INITIAL_TRANSACTIONS.filter(t => {
-      const matchSearch = t.company.toLowerCase().includes(searchTxn.toLowerCase()) || t.invoice.toLowerCase().includes(searchTxn.toLowerCase());
-      const matchSource = filterSource === 'all' || t.source.toLowerCase().includes(filterSource.toLowerCase());
+    return transactions.filter(t => {
+      const matchSearch = (t.company || '').toLowerCase().includes(searchTxn.toLowerCase()) || 
+                          (t.invoice || '').toLowerCase().includes(searchTxn.toLowerCase());
+      const matchSource = filterSource === 'all' || (t.source || '').toLowerCase().includes(filterSource.toLowerCase());
       return matchSearch && matchSource;
     });
-  }, [searchTxn, filterSource]);
+  }, [transactions, searchTxn, filterSource]);
 
-  // MRR Chart Filter
+  // MRR Chart Filter bound to Supabase mrrHistory
   const chartData = useMemo(() => {
+    if (!mrrHistory || mrrHistory.length === 0) return [];
     if (timeRange === '7D') {
       return [
         { month: 'Mon', mrr: 61000 },
@@ -199,10 +163,34 @@ export default function DashboardPage() {
         { month: 'W4', mrr: 515000 }
       ];
     } else if (timeRange === '90D') {
-      return MRR_HISTORY_1Y.slice(-3);
+      return mrrHistory.slice(-3);
     }
-    return MRR_HISTORY_1Y;
-  }, [timeRange]);
+    return mrrHistory;
+  }, [timeRange, mrrHistory]);
+
+  const handleCreateTxnSubmit = async (e) => {
+    e.preventDefault();
+    if (!newTxnCompany || !newTxnAmount) return;
+
+    setIsSubmittingTxn(true);
+    const amountVal = parseFloat(newTxnAmount);
+    const newTxnObj = {
+      id: `txn_${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+      company: newTxnCompany,
+      logo: newTxnCompany.substring(0, 2).toUpperCase(),
+      amount: amountVal,
+      status: 'Settled',
+      source: newTxnSource,
+      date: 'Just now',
+      invoice: `INV-2026-${Math.floor(100 + Math.random() * 900)}`
+    };
+
+    await addTransaction(newTxnObj);
+    setIsSubmittingTxn(false);
+    setShowAddTxnModal(false);
+    setNewTxnCompany('');
+    setNewTxnAmount('');
+  };
 
   return (
     <div className="dashboard-container" data-theme={theme}>
@@ -324,6 +312,19 @@ export default function DashboardPage() {
           {/* Right Topbar Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
             
+            {/* Supabase Cloud Connection Status Badge */}
+            {isLiveSupabase ? (
+              <span className="badge badge-verified" style={{ fontSize: '0.6875rem' }} title="Connected to Supabase PostgreSQL Cloud">
+                <span className="pulse-dot pulse-dot-green" />
+                <span>Supabase Live</span>
+              </span>
+            ) : (
+              <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }} title="Running with local verified seed cache. Set VITE_SUPABASE_URL to connect live cloud project.">
+                <span className="pulse-dot pulse-dot-blue" />
+                <span>Seed Ledger</span>
+              </span>
+            )}
+
             {/* Currency Switcher */}
             <div style={{
               display: 'inline-flex',
@@ -466,6 +467,19 @@ export default function DashboardPage() {
         {/* Dashboard Main Content Body */}
         <main style={{ padding: '32px 24px 64px 24px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
           
+          {/* Error Banner if Supabase or network error occurs */}
+          {error && (
+            <div className="error-banner">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} />
+                <span>Notice: {error}. Falling back to verified local ledger cache.</span>
+              </div>
+              <button onClick={() => refetch()} className="btn btn-secondary btn-sm" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
+                Retry Sync
+              </button>
+            </div>
+          )}
+
           {/* Welcome Header */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
             <div>
@@ -479,14 +493,24 @@ export default function DashboardPage() {
                 </span>
               </div>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                Authenticated founder: <strong>{founderName}</strong> • MCA CIN: <code style={{ fontFamily: 'var(--font-mono)' }}>U72900KA2023PTC172819</code> • Ledger Hash: <strong style={{ color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>FL-2026-KA-88A92F</strong>
+                Authenticated founder: <strong>{founderName}</strong> • MCA CIN: <code style={{ fontFamily: 'var(--font-mono)' }}>{stats.mcaCin || 'U72900KA2023PTC172819'}</code> • Ledger Hash: <strong style={{ color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>{stats.ledgerHash || 'FL-2026-KA-88A92F'}</strong>
               </p>
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setActiveTab('gateways')} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
-                <Activity size={14} />
-                <span>Gateway Status</span>
+              <button
+                onClick={() => refetch()}
+                disabled={refreshing}
+                className="btn btn-secondary btn-sm"
+                style={{ gap: '6px' }}
+                title="Synchronize live records from Supabase"
+              >
+                <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                <span>{refreshing ? 'Syncing...' : 'Sync Cloud'}</span>
+              </button>
+              <button onClick={() => setShowAddTxnModal(true)} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
+                <Plus size={14} />
+                <span>Record Inward Settlement</span>
               </button>
               <button onClick={() => setActiveTab('deals')} className="btn btn-primary btn-sm" style={{ gap: '6px' }}>
                 <Lock size={14} />
@@ -498,213 +522,237 @@ export default function DashboardPage() {
           {/* ==========================================================================
               4 Animated Metric Cards (MRR, ARR, Customers, Growth %)
               ========================================================================== */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '16px',
-            marginBottom: '32px'
-          }}>
-            {/* 1. Monthly Recurring Revenue */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Monthly Recurring Revenue (MRR)
-                </span>
-                <CreditCard size={16} style={{ color: 'var(--brand-primary)' }} />
-              </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
-                {formatCurrency(animatedMRR, currency)}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--success-dark)', fontWeight: 600 }}>
-                <TrendingUp size={13} />
-                <span>+24.8% MoM Growth</span>
-              </div>
-            </motion.div>
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
+                  <div className="skeleton-shimmer" style={{ width: '60%', height: '14px', marginBottom: '12px' }} />
+                  <div className="skeleton-shimmer" style={{ width: '80%', height: '32px', marginBottom: '8px' }} />
+                  <div className="skeleton-shimmer" style={{ width: '40%', height: '12px' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '16px',
+              marginBottom: '32px'
+            }}>
+              {/* 1. Monthly Recurring Revenue */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Monthly Recurring Revenue (MRR)
+                  </span>
+                  <CreditCard size={16} style={{ color: 'var(--brand-primary)' }} />
+                </div>
+                <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
+                  {formatCurrency(animatedMRR, currency)}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--success-dark)', fontWeight: 600 }}>
+                  <TrendingUp size={13} />
+                  <span>+{stats.growthMoM}% MoM Growth</span>
+                </div>
+              </motion.div>
 
-            {/* 2. Annual Recurring Revenue */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Annual Run Rate (ARR)
-                </span>
-                <ShieldCheck size={16} style={{ color: 'var(--brand-primary)' }} />
-              </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
-                {formatCurrency(animatedARR, currency)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Audit Score: <strong style={{ color: 'var(--text-primary)' }}>100% Tax Match</strong>
-              </div>
-            </motion.div>
+              {/* 2. Annual Recurring Revenue */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Annual Run Rate (ARR)
+                  </span>
+                  <ShieldCheck size={16} style={{ color: 'var(--brand-primary)' }} />
+                </div>
+                <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
+                  {formatCurrency(animatedARR, currency)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  Audit Score: <strong style={{ color: 'var(--text-primary)' }}>{stats.gstStatus || '100% Tax Match'}</strong>
+                </div>
+              </motion.div>
 
-            {/* 3. Customers */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Paying Customers
-                </span>
-                <Users size={16} style={{ color: 'var(--purple)' }} />
-              </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
-                {Math.round(animatedCustomers)}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                ARPU: <strong>₹7,450 / account</strong>
-              </div>
-            </motion.div>
+              {/* 3. Customers */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Paying Customers
+                  </span>
+                  <Users size={16} style={{ color: 'var(--purple)' }} />
+                </div>
+                <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
+                  {Math.round(animatedCustomers)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  ARPU: <strong>₹7,450 / account</strong>
+                </div>
+              </motion.div>
 
-            {/* 4. Monthly Growth % */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Monthly Growth Rate
-                </span>
-                <TrendingUp size={16} style={{ color: 'var(--success-dark)' }} />
-              </div>
-              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--success-dark)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
-                +{animatedGrowth.toFixed(1)}%
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
-                Top 10% in Indian B2B SaaS
-              </div>
-            </motion.div>
-          </div>
+              {/* 4. Monthly Growth % */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    Monthly Growth Rate
+                  </span>
+                  <TrendingUp size={16} style={{ color: 'var(--success-dark)' }} />
+                </div>
+                <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--success-dark)', fontFamily: 'var(--font-mono)', marginBottom: '4px' }}>
+                  +{animatedGrowth.toFixed(1)}%
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
+                  Top 10% in Indian B2B SaaS
+                </div>
+              </motion.div>
+            </div>
+          )}
 
           {/* ==========================================================================
               4 Recharts Visualizations Grid
               ========================================================================== */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-            
-            {/* Chart 1: 12-Month MRR Area Chart */}
-            <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>12-Month Audited MRR Trajectory</h3>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Razorpay + UPI AutoPay live settlement feed</p>
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)', height: '340px' }}>
+                  <div className="skeleton-shimmer" style={{ width: '40%', height: '20px', marginBottom: '8px' }} />
+                  <div className="skeleton-shimmer" style={{ width: '60%', height: '14px', marginBottom: '24px' }} />
+                  <div className="skeleton-shimmer" style={{ width: '100%', height: '220px', borderRadius: '12px' }} />
                 </div>
-                <div className="dashboard-tabs">
-                  {['7D', '30D', '90D', '1Y'].map(r => (
-                    <button
-                      key={r}
-                      onClick={() => setTimeRange(r)}
-                      className={`dashboard-tab-btn ${timeRange === r ? 'active' : ''}`}
-                    >
-                      {r}
-                    </button>
-                  ))}
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+              
+              {/* Chart 1: 12-Month MRR Area Chart */}
+              <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>12-Month Audited MRR Trajectory</h3>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Razorpay + UPI AutoPay live settlement feed</p>
+                  </div>
+                  <div className="dashboard-tabs">
+                    {['7D', '30D', '90D', '1Y'].map(r => (
+                      <button
+                        key={r}
+                        onClick={() => setTimeRange(r)}
+                        className={`dashboard-tab-btn ${timeRange === r ? 'active' : ''}`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ width: '100%', height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="dashMrrGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
+                      <XAxis dataKey="month" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/83000).toFixed(0)}k` : `₹${(v/100000).toFixed(1)}L`} />
+                      <Tooltip content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="recharts-custom-tooltip">
+                              <div style={{ color: '#94A3B8', fontSize: '0.75rem', marginBottom: '4px' }}>{label}</div>
+                              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF' }}>{formatCurrency(payload[0].value, currency)}</div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }} />
+                      <Area type="monotone" dataKey="mrr" stroke="#2563EB" strokeWidth={2.5} fillOpacity={1} fill="url(#dashMrrGrad)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#FFF', strokeWidth: 2 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 
-              <div style={{ width: '100%', height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="dashMrrGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
-                    <XAxis dataKey="month" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/83000).toFixed(0)}k` : `₹${(v/100000).toFixed(1)}L`} />
-                    <Tooltip content={({ active, payload, label }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="recharts-custom-tooltip">
-                            <div style={{ color: '#94A3B8', fontSize: '0.75rem', marginBottom: '4px' }}>{label}</div>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF' }}>{formatCurrency(payload[0].value, currency)}</div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }} />
-                    <Area type="monotone" dataKey="mrr" stroke="#2563EB" strokeWidth={2.5} fillOpacity={1} fill="url(#dashMrrGrad)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#FFF', strokeWidth: 2 }} />
-                  </AreaChart>
-                </ResponsiveContainer>
+              {/* Chart 2: Revenue by Category Bar Chart */}
+              <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>ARR Distribution by Sector</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Comparative Indian startup revenue clusters</p>
+                </div>
+
+                <div style={{ width: '100%', height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={categoryRevenue} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
+                      <XAxis dataKey="category" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/8300000).toFixed(1)}M` : `₹${(v/10000000).toFixed(1)}Cr`} />
+                      <Tooltip formatter={(val) => [formatCurrency(val, currency), 'Total ARR']} contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
+                      <Bar dataKey="arr" radius={[6, 6, 0, 0]}>
+                        {categoryRevenue.map((entry, index) => (
+                          <Cell key={`bar-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
+
+              {/* Chart 3: Customer Growth Area Chart */}
+              <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>Paying Customer Trajectory</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Net paying subscriber growth across fiscal quarters</p>
+                </div>
+
+                <div style={{ width: '100%', height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={customerGrowth} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="dashCustGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
+                      <XAxis dataKey="month" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
+                      <Area type="monotone" dataKey="customers" stroke="#7C3AED" strokeWidth={2.5} fillOpacity={1} fill="url(#dashCustGrad)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 4: ARR Gateway Distribution Donut Chart */}
+              <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>Payment Gateway Mix</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Revenue volume split across Indian payment tunnels</p>
+                </div>
+
+                <div style={{ width: '100%', height: 260, display: 'flex', alignItems: 'center' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={gatewayDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {gatewayDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(val) => [`${val}%`, 'Volume']} contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" formatter={(value) => <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{value}</span>} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
             </div>
-
-            {/* Chart 2: Revenue by Category Bar Chart */}
-            <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>ARR Distribution by Sector</h3>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Comparative Indian startup revenue clusters</p>
-              </div>
-
-              <div style={{ width: '100%', height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={CATEGORY_REVENUE} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
-                    <XAxis dataKey="category" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => currency === 'USD' ? `$${(v/8300000).toFixed(1)}M` : `₹${(v/10000000).toFixed(1)}Cr`} />
-                    <Tooltip formatter={(val) => [formatCurrency(val, currency), 'Total ARR']} contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
-                    <Bar dataKey="arr" radius={[6, 6, 0, 0]}>
-                      {CATEGORY_REVENUE.map((entry, index) => (
-                        <Cell key={`bar-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Chart 3: Customer Growth Area Chart */}
-            <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>Paying Customer Trajectory</h3>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Net paying subscriber growth (85 &rarr; 248 accounts)</p>
-              </div>
-
-              <div style={{ width: '100%', height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={CUSTOMER_GROWTH} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="dashCustGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.6)" />
-                    <XAxis dataKey="month" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(226, 232, 240, 0.8)' }} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
-                    <Area type="monotone" dataKey="customers" stroke="#7C3AED" strokeWidth={2.5} fillOpacity={1} fill="url(#dashCustGrad)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Chart 4: ARR Gateway Distribution Donut Chart */}
-            <div className="glass-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.05rem', marginBottom: '2px' }}>Payment Gateway Mix</h3>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Revenue volume split across Indian payment tunnels</p>
-              </div>
-
-              <div style={{ width: '100%', height: 260, display: 'flex', alignItems: 'center' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={GATEWAY_DISTRIBUTION}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {GATEWAY_DISTRIBUTION.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(val) => [`${val}%`, 'Volume']} contentStyle={{ background: '#0F172A', borderRadius: '8px', border: 'none', color: '#FFF', fontSize: '0.75rem' }} />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" formatter={(value) => <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{value}</span>} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-          </div>
+          )}
 
           {/* ==========================================================================
               Recent Transactions Data Table
@@ -773,7 +821,7 @@ export default function DashboardPage() {
                             fontWeight: 700,
                             fontSize: '0.6875rem'
                           }}>
-                            {t.logo}
+                            {t.logo || (t.company ? t.company.substring(0, 2).toUpperCase() : 'FL')}
                           </div>
                           <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.company}</span>
                         </div>
@@ -788,7 +836,7 @@ export default function DashboardPage() {
                       <td style={{ padding: '12px 16px' }}>
                         <span className="badge badge-verified" style={{ fontSize: '0.6875rem' }}>
                           <CheckCircle2 size={10} />
-                          <span>{t.status}</span>
+                          <span>{t.status || 'Settled'}</span>
                         </span>
                       </td>
 
@@ -814,8 +862,8 @@ export default function DashboardPage() {
 
             {/* Table Footer */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              <div>Showing {filteredTransactions.length} of {INITIAL_TRANSACTIONS.length} processed settlement receipts</div>
-              <div>HMAC SHA-256 Webhook Sync: <strong>Active</strong></div>
+              <div>Showing {filteredTransactions.length} of {transactions.length} processed settlement receipts</div>
+              <div>HMAC SHA-256 Webhook Sync: <strong>{isLiveSupabase ? 'Supabase Live' : 'Active (Local)'}</strong></div>
             </div>
           </div>
 
@@ -902,6 +950,147 @@ export default function DashboardPage() {
 
         </main>
       </div>
+
+      {/* Record Inward Settlement Modal */}
+      <AnimatePresence>
+        {showAddTxnModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(9, 14, 26, 0.65)',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '16px'
+          }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="glass-card"
+              style={{
+                width: '100%',
+                maxWidth: '460px',
+                background: 'var(--bg-card-elevated)',
+                borderRadius: '20px',
+                padding: '28px',
+                boxShadow: 'var(--shadow-xl)',
+                border: '1px solid var(--border-light)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--brand-soft)', color: 'var(--brand-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Plus size={18} />
+                  </div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Record Inward Settlement</h3>
+                </div>
+                <button
+                  onClick={() => setShowAddTxnModal(false)}
+                  style={{ border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.25rem' }}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateTxnSubmit}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                    Client Company Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Razorpay Labs, BrowserStack, Lenskart"
+                    value={newTxnCompany}
+                    onChange={(e) => setNewTxnCompany(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-light)',
+                      borderRadius: '8px',
+                      fontSize: '0.875rem',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                    Settlement Amount (₹ INR)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="100"
+                    placeholder="e.g., 75000"
+                    value={newTxnAmount}
+                    onChange={(e) => setNewTxnAmount(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-light)',
+                      borderRadius: '8px',
+                      fontSize: '0.875rem',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                    Payment Gateway Source
+                  </label>
+                  <select
+                    value={newTxnSource}
+                    onChange={(e) => setNewTxnSource(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-light)',
+                      borderRadius: '8px',
+                      fontSize: '0.875rem',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="Razorpay Subscriptions">Razorpay Subscriptions</option>
+                    <option value="UPI AutoPay">UPI AutoPay (PhonePe/GPay)</option>
+                    <option value="Stripe India">Stripe India (Global USD)</option>
+                    <option value="ICICI Bank Wire">ICICI Bank Wire</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTxnModal(false)}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingTxn}
+                    className="btn btn-primary btn-sm"
+                    style={{ gap: '6px' }}
+                  >
+                    {isSubmittingTxn ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />}
+                    <span>{isSubmittingTxn ? 'Recording...' : 'Add Verified Settlement'}</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
